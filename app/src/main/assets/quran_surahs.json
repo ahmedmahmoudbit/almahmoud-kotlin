@@ -1,0 +1,914 @@
+[
+  {
+    "number": 1,
+    "nameArabic": "الفاتحة",
+    "nameEnglish": "الفاتحة",
+    "versesCount": 7,
+    "revelationType": "مكية",
+    "pageNumber": 1
+  },
+  {
+    "number": 2,
+    "nameArabic": "البقرة",
+    "nameEnglish": "البقرة",
+    "versesCount": 286,
+    "revelationType": "مدنية",
+    "pageNumber": 2
+  },
+  {
+    "number": 3,
+    "nameArabic": "آل عمران",
+    "nameEnglish": "آل عمران",
+    "versesCount": 200,
+    "revelationType": "مدنية",
+    "pageNumber": 50
+  },
+  {
+    "number": 4,
+    "nameArabic": "النساء",
+    "nameEnglish": "النساء",
+    "versesCount": 176,
+    "revelationType": "مدنية",
+    "pageNumber": 77
+  },
+  {
+    "number": 5,
+    "nameArabic": "المائدة",
+    "nameEnglish": "المائدة",
+    "versesCount": 120,
+    "revelationType": "مدنية",
+    "pageNumber": 106
+  },
+  {
+    "number": 6,
+    "nameArabic": "الأنعام",
+    "nameEnglish": "الأنعام",
+    "versesCount": 165,
+    "revelationType": "مكية",
+    "pageNumber": 128
+  },
+  {
+    "number": 7,
+    "nameArabic": "الأعراف",
+    "nameEnglish": "الأعراف",
+    "versesCount": 206,
+    "revelationType": "مكية",
+    "pageNumber": 151
+  },
+  {
+    "number": 8,
+    "nameArabic": "الأنفال",
+    "nameEnglish": "الأنفال",
+    "versesCount": 75,
+    "revelationType": "مدنية",
+    "pageNumber": 177
+  },
+  {
+    "number": 9,
+    "nameArabic": "التوبة",
+    "nameEnglish": "التوبة",
+    "versesCount": 129,
+    "revelationType": "مدنية",
+    "pageNumber": 187
+  },
+  {
+    "number": 10,
+    "nameArabic": "يونس",
+    "nameEnglish": "يونس",
+    "versesCount": 109,
+    "revelationType": "مكية",
+    "pageNumber": 208
+  },
+  {
+    "number": 11,
+    "nameArabic": "هود",
+    "nameEnglish": "هود",
+    "versesCount": 123,
+    "revelationType": "مكية",
+    "pageNumber": 221
+  },
+  {
+    "number": 12,
+    "nameArabic": "يوسف",
+    "nameEnglish": "يوسف",
+    "versesCount": 111,
+    "revelationType": "مكية",
+    "pageNumber": 235
+  },
+  {
+    "number": 13,
+    "nameArabic": "الرعد",
+    "nameEnglish": "الرعد",
+    "versesCount": 43,
+    "revelationType": "مدنية",
+    "pageNumber": 249
+  },
+  {
+    "number": 14,
+    "nameArabic": "إبراهيم",
+    "nameEnglish": "إبراهيم",
+    "versesCount": 52,
+    "revelationType": "مكية",
+    "pageNumber": 255
+  },
+  {
+    "number": 15,
+    "nameArabic": "الحجر",
+    "nameEnglish": "الحجر",
+    "versesCount": 99,
+    "revelationType": "مكية",
+    "pageNumber": 262
+  },
+  {
+    "number": 16,
+    "nameArabic": "النحل",
+    "nameEnglish": "النحل",
+    "versesCount": 128,
+    "revelationType": "مكية",
+    "pageNumber": 267
+  },
+  {
+    "number": 17,
+    "nameArabic": "الإسراء",
+    "nameEnglish": "الإسراء",
+    "versesCount": 111,
+    "revelationType": "مكية",
+    "pageNumber": 282
+  },
+  {
+    "number": 18,
+    "nameArabic": "الكهف",
+    "nameEnglish": "الكهف",
+    "versesCount": 110,
+    "revelationType": "مكية",
+    "pageNumber": 293
+  },
+  {
+    "number": 19,
+    "nameArabic": "مريم",
+    "nameEnglish": "مريم",
+    "versesCount": 98,
+    "revelationType": "مكية",
+    "pageNumber": 305
+  },
+  {
+    "number": 20,
+    "nameArabic": "طه",
+    "nameEnglish": "طه",
+    "versesCount": 135,
+    "revelationType": "مكية",
+    "pageNumber": 312
+  },
+  {
+    "number": 21,
+    "nameArabic": "الأنبياء",
+    "nameEnglish": "الأنبياء",
+    "versesCount": 112,
+    "revelationType": "مكية",
+    "pageNumber": 322
+  },
+  {
+    "number": 22,
+    "nameArabic": "الحج",
+    "nameEnglish": "الحج",
+    "versesCount": 78,
+    "revelationType": "مدنية",
+    "pageNumber": 332
+  },
+  {
+    "number": 23,
+    "nameArabic": "المؤمنون",
+    "nameEnglish": "المؤمنون",
+    "versesCount": 118,
+    "revelationType": "مكية",
+    "pageNumber": 342
+  },
+  {
+    "number": 24,
+    "nameArabic": "النور",
+    "nameEnglish": "النور",
+    "versesCount": 64,
+    "revelationType": "مدنية",
+    "pageNumber": 350
+  },
+  {
+    "number": 25,
+    "nameArabic": "الفرقان",
+    "nameEnglish": "الفرقان",
+    "versesCount": 77,
+    "revelationType": "مكية",
+    "pageNumber": 359
+  },
+  {
+    "number": 26,
+    "nameArabic": "الشعراء",
+    "nameEnglish": "الشعراء",
+    "versesCount": 227,
+    "revelationType": "مكية",
+    "pageNumber": 367
+  },
+  {
+    "number": 27,
+    "nameArabic": "النمل",
+    "nameEnglish": "النمل",
+    "versesCount": 93,
+    "revelationType": "مكية",
+    "pageNumber": 377
+  },
+  {
+    "number": 28,
+    "nameArabic": "القصص",
+    "nameEnglish": "القصص",
+    "versesCount": 88,
+    "revelationType": "مكية",
+    "pageNumber": 385
+  },
+  {
+    "number": 29,
+    "nameArabic": "العنكبوت",
+    "nameEnglish": "العنكبوت",
+    "versesCount": 69,
+    "revelationType": "مكية",
+    "pageNumber": 396
+  },
+  {
+    "number": 30,
+    "nameArabic": "الروم",
+    "nameEnglish": "الروم",
+    "versesCount": 60,
+    "revelationType": "مكية",
+    "pageNumber": 404
+  },
+  {
+    "number": 31,
+    "nameArabic": "لقمان",
+    "nameEnglish": "لقمان",
+    "versesCount": 34,
+    "revelationType": "مكية",
+    "pageNumber": 411
+  },
+  {
+    "number": 32,
+    "nameArabic": "السجدة",
+    "nameEnglish": "السجدة",
+    "versesCount": 30,
+    "revelationType": "مكية",
+    "pageNumber": 415
+  },
+  {
+    "number": 33,
+    "nameArabic": "الأحزاب",
+    "nameEnglish": "الأحزاب",
+    "versesCount": 73,
+    "revelationType": "مدنية",
+    "pageNumber": 418
+  },
+  {
+    "number": 34,
+    "nameArabic": "سبأ",
+    "nameEnglish": "سبأ",
+    "versesCount": 54,
+    "revelationType": "مكية",
+    "pageNumber": 428
+  },
+  {
+    "number": 35,
+    "nameArabic": "فاطر",
+    "nameEnglish": "فاطر",
+    "versesCount": 45,
+    "revelationType": "مكية",
+    "pageNumber": 434
+  },
+  {
+    "number": 36,
+    "nameArabic": "يس",
+    "nameEnglish": "يس",
+    "versesCount": 83,
+    "revelationType": "مكية",
+    "pageNumber": 440
+  },
+  {
+    "number": 37,
+    "nameArabic": "الصافات",
+    "nameEnglish": "الصافات",
+    "versesCount": 182,
+    "revelationType": "مكية",
+    "pageNumber": 446
+  },
+  {
+    "number": 38,
+    "nameArabic": "ص",
+    "nameEnglish": "ص",
+    "versesCount": 88,
+    "revelationType": "مكية",
+    "pageNumber": 453
+  },
+  {
+    "number": 39,
+    "nameArabic": "الزمر",
+    "nameEnglish": "الزمر",
+    "versesCount": 75,
+    "revelationType": "مكية",
+    "pageNumber": 458
+  },
+  {
+    "number": 40,
+    "nameArabic": "غافر",
+    "nameEnglish": "غافر",
+    "versesCount": 85,
+    "revelationType": "مكية",
+    "pageNumber": 467
+  },
+  {
+    "number": 41,
+    "nameArabic": "فصلت",
+    "nameEnglish": "فصلت",
+    "versesCount": 54,
+    "revelationType": "مكية",
+    "pageNumber": 477
+  },
+  {
+    "number": 42,
+    "nameArabic": "الشورى",
+    "nameEnglish": "الشورى",
+    "versesCount": 53,
+    "revelationType": "مكية",
+    "pageNumber": 483
+  },
+  {
+    "number": 43,
+    "nameArabic": "الزخرف",
+    "nameEnglish": "الزخرف",
+    "versesCount": 89,
+    "revelationType": "مكية",
+    "pageNumber": 489
+  },
+  {
+    "number": 44,
+    "nameArabic": "الدخان",
+    "nameEnglish": "الدخان",
+    "versesCount": 59,
+    "revelationType": "مكية",
+    "pageNumber": 496
+  },
+  {
+    "number": 45,
+    "nameArabic": "الجاثية",
+    "nameEnglish": "الجاثية",
+    "versesCount": 37,
+    "revelationType": "مكية",
+    "pageNumber": 499
+  },
+  {
+    "number": 46,
+    "nameArabic": "الأحقاف",
+    "nameEnglish": "الأحقاف",
+    "versesCount": 35,
+    "revelationType": "مكية",
+    "pageNumber": 502
+  },
+  {
+    "number": 47,
+    "nameArabic": "محمد",
+    "nameEnglish": "محمد",
+    "versesCount": 38,
+    "revelationType": "مدنية",
+    "pageNumber": 507
+  },
+  {
+    "number": 48,
+    "nameArabic": "الفتح",
+    "nameEnglish": "الفتح",
+    "versesCount": 29,
+    "revelationType": "مدنية",
+    "pageNumber": 511
+  },
+  {
+    "number": 49,
+    "nameArabic": "الحجرات",
+    "nameEnglish": "الحجرات",
+    "versesCount": 18,
+    "revelationType": "مدنية",
+    "pageNumber": 515
+  },
+  {
+    "number": 50,
+    "nameArabic": "ق",
+    "nameEnglish": "ق",
+    "versesCount": 45,
+    "revelationType": "مكية",
+    "pageNumber": 518
+  },
+  {
+    "number": 51,
+    "nameArabic": "الذاريات",
+    "nameEnglish": "الذاريات",
+    "versesCount": 60,
+    "revelationType": "مكية",
+    "pageNumber": 520
+  },
+  {
+    "number": 52,
+    "nameArabic": "الطور",
+    "nameEnglish": "الطور",
+    "versesCount": 49,
+    "revelationType": "مكية",
+    "pageNumber": 523
+  },
+  {
+    "number": 53,
+    "nameArabic": "النجم",
+    "nameEnglish": "النجم",
+    "versesCount": 62,
+    "revelationType": "مكية",
+    "pageNumber": 526
+  },
+  {
+    "number": 54,
+    "nameArabic": "القمر",
+    "nameEnglish": "القمر",
+    "versesCount": 55,
+    "revelationType": "مكية",
+    "pageNumber": 528
+  },
+  {
+    "number": 55,
+    "nameArabic": "الرحمن",
+    "nameEnglish": "الرحمن",
+    "versesCount": 78,
+    "revelationType": "مدنية",
+    "pageNumber": 531
+  },
+  {
+    "number": 56,
+    "nameArabic": "الواقعة",
+    "nameEnglish": "الواقعة",
+    "versesCount": 96,
+    "revelationType": "مكية",
+    "pageNumber": 534
+  },
+  {
+    "number": 57,
+    "nameArabic": "الحديد",
+    "nameEnglish": "الحديد",
+    "versesCount": 29,
+    "revelationType": "مدنية",
+    "pageNumber": 537
+  },
+  {
+    "number": 58,
+    "nameArabic": "المجادلة",
+    "nameEnglish": "المجادلة",
+    "versesCount": 22,
+    "revelationType": "مدنية",
+    "pageNumber": 542
+  },
+  {
+    "number": 59,
+    "nameArabic": "الحشر",
+    "nameEnglish": "الحشر",
+    "versesCount": 24,
+    "revelationType": "مدنية",
+    "pageNumber": 545
+  },
+  {
+    "number": 60,
+    "nameArabic": "الممتحنة",
+    "nameEnglish": "الممتحنة",
+    "versesCount": 13,
+    "revelationType": "مدنية",
+    "pageNumber": 549
+  },
+  {
+    "number": 61,
+    "nameArabic": "الصف",
+    "nameEnglish": "الصف",
+    "versesCount": 14,
+    "revelationType": "مدنية",
+    "pageNumber": 551
+  },
+  {
+    "number": 62,
+    "nameArabic": "الجمعة",
+    "nameEnglish": "الجمعة",
+    "versesCount": 11,
+    "revelationType": "مدنية",
+    "pageNumber": 553
+  },
+  {
+    "number": 63,
+    "nameArabic": "المنافقون",
+    "nameEnglish": "المنافقون",
+    "versesCount": 11,
+    "revelationType": "مدنية",
+    "pageNumber": 554
+  },
+  {
+    "number": 64,
+    "nameArabic": "التغابن",
+    "nameEnglish": "التغابن",
+    "versesCount": 18,
+    "revelationType": "مدنية",
+    "pageNumber": 556
+  },
+  {
+    "number": 65,
+    "nameArabic": "الطلاق",
+    "nameEnglish": "الطلاق",
+    "versesCount": 12,
+    "revelationType": "مدنية",
+    "pageNumber": 558
+  },
+  {
+    "number": 66,
+    "nameArabic": "التحريم",
+    "nameEnglish": "التحريم",
+    "versesCount": 12,
+    "revelationType": "مدنية",
+    "pageNumber": 560
+  },
+  {
+    "number": 67,
+    "nameArabic": "الملك",
+    "nameEnglish": "الملك",
+    "versesCount": 30,
+    "revelationType": "مكية",
+    "pageNumber": 562
+  },
+  {
+    "number": 68,
+    "nameArabic": "القلم",
+    "nameEnglish": "القلم",
+    "versesCount": 52,
+    "revelationType": "مكية",
+    "pageNumber": 564
+  },
+  {
+    "number": 69,
+    "nameArabic": "الحاقة",
+    "nameEnglish": "الحاقة",
+    "versesCount": 52,
+    "revelationType": "مكية",
+    "pageNumber": 566
+  },
+  {
+    "number": 70,
+    "nameArabic": "المعارج",
+    "nameEnglish": "المعارج",
+    "versesCount": 44,
+    "revelationType": "مكية",
+    "pageNumber": 568
+  },
+  {
+    "number": 71,
+    "nameArabic": "نوح",
+    "nameEnglish": "نوح",
+    "versesCount": 28,
+    "revelationType": "مكية",
+    "pageNumber": 570
+  },
+  {
+    "number": 72,
+    "nameArabic": "الجن",
+    "nameEnglish": "الجن",
+    "versesCount": 28,
+    "revelationType": "مكية",
+    "pageNumber": 572
+  },
+  {
+    "number": 73,
+    "nameArabic": "المزمل",
+    "nameEnglish": "المزمل",
+    "versesCount": 20,
+    "revelationType": "مكية",
+    "pageNumber": 574
+  },
+  {
+    "number": 74,
+    "nameArabic": "المدثر",
+    "nameEnglish": "المدثر",
+    "versesCount": 56,
+    "revelationType": "مكية",
+    "pageNumber": 575
+  },
+  {
+    "number": 75,
+    "nameArabic": "القيامة",
+    "nameEnglish": "القيامة",
+    "versesCount": 40,
+    "revelationType": "مكية",
+    "pageNumber": 577
+  },
+  {
+    "number": 76,
+    "nameArabic": "الإنسان",
+    "nameEnglish": "الإنسان",
+    "versesCount": 31,
+    "revelationType": "مدنية",
+    "pageNumber": 578
+  },
+  {
+    "number": 77,
+    "nameArabic": "المرسلات",
+    "nameEnglish": "المرسلات",
+    "versesCount": 50,
+    "revelationType": "مكية",
+    "pageNumber": 580
+  },
+  {
+    "number": 78,
+    "nameArabic": "النبأ",
+    "nameEnglish": "النبأ",
+    "versesCount": 40,
+    "revelationType": "مكية",
+    "pageNumber": 582
+  },
+  {
+    "number": 79,
+    "nameArabic": "النازعات",
+    "nameEnglish": "النازعات",
+    "versesCount": 46,
+    "revelationType": "مكية",
+    "pageNumber": 583
+  },
+  {
+    "number": 80,
+    "nameArabic": "عبس",
+    "nameEnglish": "عبس",
+    "versesCount": 42,
+    "revelationType": "مكية",
+    "pageNumber": 585
+  },
+  {
+    "number": 81,
+    "nameArabic": "التكوير",
+    "nameEnglish": "التكوير",
+    "versesCount": 29,
+    "revelationType": "مكية",
+    "pageNumber": 586
+  },
+  {
+    "number": 82,
+    "nameArabic": "الانفطار",
+    "nameEnglish": "الانفطار",
+    "versesCount": 19,
+    "revelationType": "مكية",
+    "pageNumber": 587
+  },
+  {
+    "number": 83,
+    "nameArabic": "المطففين",
+    "nameEnglish": "المطففين",
+    "versesCount": 36,
+    "revelationType": "مكية",
+    "pageNumber": 587
+  },
+  {
+    "number": 84,
+    "nameArabic": "الانشقاق",
+    "nameEnglish": "الانشقاق",
+    "versesCount": 25,
+    "revelationType": "مكية",
+    "pageNumber": 589
+  },
+  {
+    "number": 85,
+    "nameArabic": "البروج",
+    "nameEnglish": "البروج",
+    "versesCount": 22,
+    "revelationType": "مكية",
+    "pageNumber": 590
+  },
+  {
+    "number": 86,
+    "nameArabic": "الطارق",
+    "nameEnglish": "الطارق",
+    "versesCount": 17,
+    "revelationType": "مكية",
+    "pageNumber": 591
+  },
+  {
+    "number": 87,
+    "nameArabic": "الأعلى",
+    "nameEnglish": "الأعلى",
+    "versesCount": 19,
+    "revelationType": "مكية",
+    "pageNumber": 591
+  },
+  {
+    "number": 88,
+    "nameArabic": "الغاشية",
+    "nameEnglish": "الغاشية",
+    "versesCount": 26,
+    "revelationType": "مكية",
+    "pageNumber": 592
+  },
+  {
+    "number": 89,
+    "nameArabic": "الفجر",
+    "nameEnglish": "الفجر",
+    "versesCount": 30,
+    "revelationType": "مكية",
+    "pageNumber": 593
+  },
+  {
+    "number": 90,
+    "nameArabic": "البلد",
+    "nameEnglish": "البلد",
+    "versesCount": 20,
+    "revelationType": "مكية",
+    "pageNumber": 594
+  },
+  {
+    "number": 91,
+    "nameArabic": "الشمس",
+    "nameEnglish": "الشمس",
+    "versesCount": 15,
+    "revelationType": "مكية",
+    "pageNumber": 595
+  },
+  {
+    "number": 92,
+    "nameArabic": "الليل",
+    "nameEnglish": "الليل",
+    "versesCount": 21,
+    "revelationType": "مكية",
+    "pageNumber": 595
+  },
+  {
+    "number": 93,
+    "nameArabic": "الضحى",
+    "nameEnglish": "الضحى",
+    "versesCount": 11,
+    "revelationType": "مكية",
+    "pageNumber": 596
+  },
+  {
+    "number": 94,
+    "nameArabic": "الشرح",
+    "nameEnglish": "الشرح",
+    "versesCount": 8,
+    "revelationType": "مكية",
+    "pageNumber": 596
+  },
+  {
+    "number": 95,
+    "nameArabic": "التين",
+    "nameEnglish": "التين",
+    "versesCount": 5,
+    "revelationType": "مكية",
+    "pageNumber": 597
+  },
+  {
+    "number": 96,
+    "nameArabic": "العلق",
+    "nameEnglish": "العلق",
+    "versesCount": 19,
+    "revelationType": "مكية",
+    "pageNumber": 597
+  },
+  {
+    "number": 97,
+    "nameArabic": "القدر",
+    "nameEnglish": "القدر",
+    "versesCount": 5,
+    "revelationType": "مكية",
+    "pageNumber": 598
+  },
+  {
+    "number": 98,
+    "nameArabic": "البينة",
+    "nameEnglish": "البينة",
+    "versesCount": 8,
+    "revelationType": "مدنية",
+    "pageNumber": 598
+  },
+  {
+    "number": 99,
+    "nameArabic": "الزلزلة",
+    "nameEnglish": "الزلزلة",
+    "versesCount": 8,
+    "revelationType": "مدنية",
+    "pageNumber": 599
+  },
+  {
+    "number": 100,
+    "nameArabic": "العاديات",
+    "nameEnglish": "العاديات",
+    "versesCount": 11,
+    "revelationType": "مكية",
+    "pageNumber": 599
+  },
+  {
+    "number": 101,
+    "nameArabic": "القارعة",
+    "nameEnglish": "القارعة",
+    "versesCount": 11,
+    "revelationType": "مكية",
+    "pageNumber": 600
+  },
+  {
+    "number": 102,
+    "nameArabic": "التكاثر",
+    "nameEnglish": "التكاثر",
+    "versesCount": 8,
+    "revelationType": "مكية",
+    "pageNumber": 600
+  },
+  {
+    "number": 103,
+    "nameArabic": "العصر",
+    "nameEnglish": "العصر",
+    "versesCount": 3,
+    "revelationType": "مكية",
+    "pageNumber": 601
+  },
+  {
+    "number": 104,
+    "nameArabic": "الهمزة",
+    "nameEnglish": "الهمزة",
+    "versesCount": 9,
+    "revelationType": "مكية",
+    "pageNumber": 601
+  },
+  {
+    "number": 105,
+    "nameArabic": "الفيل",
+    "nameEnglish": "الفيل",
+    "versesCount": 5,
+    "revelationType": "مكية",
+    "pageNumber": 601
+  },
+  {
+    "number": 106,
+    "nameArabic": "قريش",
+    "nameEnglish": "قريش",
+    "versesCount": 4,
+    "revelationType": "مكية",
+    "pageNumber": 602
+  },
+  {
+    "number": 107,
+    "nameArabic": "الماعون",
+    "nameEnglish": "الماعون",
+    "versesCount": 6,
+    "revelationType": "مكية",
+    "pageNumber": 602
+  },
+  {
+    "number": 108,
+    "nameArabic": "الكوثر",
+    "nameEnglish": "الكوثر",
+    "versesCount": 3,
+    "revelationType": "مكية",
+    "pageNumber": 602
+  },
+  {
+    "number": 109,
+    "nameArabic": "الكافرون",
+    "nameEnglish": "الكافرون",
+    "versesCount": 6,
+    "revelationType": "مكية",
+    "pageNumber": 603
+  },
+  {
+    "number": 110,
+    "nameArabic": "النصر",
+    "nameEnglish": "النصر",
+    "versesCount": 3,
+    "revelationType": "مكية",
+    "pageNumber": 603
+  },
+  {
+    "number": 111,
+    "nameArabic": "المسد",
+    "nameEnglish": "المسد",
+    "versesCount": 5,
+    "revelationType": "مكية",
+    "pageNumber": 603
+  },
+  {
+    "number": 112,
+    "nameArabic": "الإخلاص",
+    "nameEnglish": "الإخلاص",
+    "versesCount": 4,
+    "revelationType": "مكية",
+    "pageNumber": 604
+  },
+  {
+    "number": 113,
+    "nameArabic": "الفلق",
+    "nameEnglish": "الفلق",
+    "versesCount": 5,
+    "revelationType": "مكية",
+    "pageNumber": 604
+  },
+  {
+    "number": 114,
+    "nameArabic": "الناس",
+    "nameEnglish": "الناس",
+    "versesCount": 6,
+    "revelationType": "مكية",
+    "pageNumber": 604
+  }
+]
