@@ -1,5 +1,6 @@
 package com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen
 
+import LiquidGlassCard
 import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
@@ -82,7 +83,6 @@ import com.almahmoudApp.al_mahmoudapp.core.ui.components.AppButton
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlass
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassDefaults
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranVerse
@@ -131,10 +131,13 @@ fun QuranActionRoute(
             ) {
                 QuranTopBar(title = surahName.ifBlank { stringResource(R.string.quran_title) }, onBack = onBack)
                 Spacer(modifier = Modifier.height(16.dp))
-                LiquidGlass(
+                LiquidGlassCard(
+                    onClick = {},
                     modifier = Modifier.fillMaxWidth(),
-                    shape = LiquidGlassDefaults.CardShape,
-                    style = LiquidGlassDefaults.Soft,
+                    refraction = 0.55f,
+                    frost = 8f,
+                    dispersion = 0.35f,
+                    glowAlpha = 0.55f,
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -413,11 +416,13 @@ private fun QuranTextControlsBar(
     onAutoScroll: (Float) -> Unit,
 ) {
     AnimatedVisibility(visible = visible) {
-        LiquidGlass(
+        LiquidGlassCard(
+            onClick = {},
             modifier = Modifier.fillMaxWidth(),
-            shape = LiquidGlassDefaults.CardShape,
-            style = LiquidGlassDefaults.Soft,
-            contentPadding = PaddingValues(12.dp),
+            refraction = 0.55f,
+            frost = 8f,
+            dispersion = 0.35f,
+            glowAlpha = 0.55f,
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
@@ -690,13 +695,15 @@ fun QuranAudioRoute(
             ) {
                 QuranTopBar(title = readerName.ifBlank { stringResource(R.string.quran_audio) }, onBack = onBack)
                 Spacer(modifier = Modifier.height(12.dp))
-                LiquidGlass(
+                LiquidGlassCard(
+                    onClick = {},
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(260.dp),
-                    shape = LiquidGlassDefaults.CardShape,
-                    style = LiquidGlassDefaults.Soft,
-                    contentPadding = PaddingValues(0.dp),
+                    refraction = 0.55f,
+                    frost = 8f,
+                    dispersion = 0.35f,
+                    glowAlpha = 0.55f,
                 ) {
                     AsyncImage(
                         model = readerImage,
@@ -786,12 +793,15 @@ private fun QuranReaderCard(
     reader: QuranReader,
     onClick: () -> Unit,
 ) {
-    LiquidGlass(
+    LiquidGlassCard(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = LiquidGlassDefaults.CardShape,
-        style = LiquidGlassDefaults.Soft,
+        refraction = 0.55f,
+        frost = 8f,
+        dispersion = 0.35f,
+        glowAlpha = 0.55f,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),

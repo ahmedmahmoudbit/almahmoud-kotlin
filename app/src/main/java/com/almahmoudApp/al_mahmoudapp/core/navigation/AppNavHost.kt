@@ -1,5 +1,4 @@
 package com.almahmoudApp.al_mahmoudapp.core.navigation
-
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -12,19 +11,19 @@ import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatRoute
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatSoundRoute
-import com.almahmoudApp.al_mahmoudapp.feature.doaa.presentation.screen.DoaaRoute
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.screen.HomeRoute
 import com.almahmoudApp.al_mahmoudapp.feature.onboarding.presentation.screen.OnboardingRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranActionRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranAudioRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranReadersRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranTextRoute
-import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranRoute
 import com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen.QotofRoute
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoryDetailsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoriesRoute
 import com.almahmoudApp.al_mahmoudapp.feature.settings.presentation.screen.SettingsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.QuranRoute
+import com.example.almahmoud.doaa.DoaaRoute
 import dev.chrisbanes.haze.HazeState
 
 @Composable

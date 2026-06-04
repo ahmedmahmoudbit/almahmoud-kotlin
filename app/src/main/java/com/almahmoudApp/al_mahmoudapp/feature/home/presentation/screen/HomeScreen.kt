@@ -104,16 +104,14 @@ private fun HomeContent(
 ) {
     LiquidHost(modifier = modifier.fillMaxSize()) {
         HomeBackground()
-        AsyncImage(
-            model = "https://drive.usercontent.google.com/download?id=17P9nqsq3bFGMnI6fcppk-KuWtuHzTAql&export=view&authuser=0",
+        Image(
+            painter = painterResource(id = R.drawable.b7),
             contentDescription = null,
-//            placeholder = painterResource(R.drawable.home_mosque_skyline),
-//            error = painterResource(R.drawable.home_mosque_skyline),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
                 .liquidSource()
-                .alpha(0.8f),
+                .alpha(0.4f),
         )
         Column(
             modifier = Modifier

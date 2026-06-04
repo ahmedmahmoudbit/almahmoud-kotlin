@@ -1,133 +1,288 @@
-package com.almahmoudApp.al_mahmoudapp.core.ui.liquid
+// LiquidGlassCard.kt
+// محاكاة iOS Liquid Glass بالكامل — بدون مكتبة خارجية
+// يعمل على Android 12+ مع تأثير Shader حقيقي، و Android < 12 بـ fallback جميل
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
+import android.graphics.RenderEffect
+import android.graphics.RuntimeShader
+import android.graphics.Shader
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.dp
-import io.github.fletchmckee.liquid.liquid
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.*
 
-/**
- * Reusable Liquid Glass surface that can wrap any Compose content.
- *
- * The same API works on all supported app devices. On Android 13+ it delegates to the liquid
- * RuntimeShader effect. On older devices it falls back to a readable frosted [Surface].
- */
+// ─────────────────────────────────────────────
+// AGSL Shader — محرك التأثير الحقيقي (Android 13+)
+// ─────────────────────────────────────────────
+private const val LIQUID_GLASS_SHADER = """
+uniform shader composable;
+uniform float2 size;
+uniform float refraction;
+uniform float frost;
+uniform float dispersion;
+uniform float time;
+
+half4 main(float2 fragCoord) {
+    float2 uv = fragCoord / size;
+    
+    // تأثير الانحناء الزجاجي — يشوّه الإحداثيات مثل عدسة محدبة
+    float2 center = float2(0.5, 0.5);
+    float2 delta  = uv - center;
+    float  dist   = length(delta);
+    float  lens   = 1.0 - dist * dist * refraction * 0.6;
+    float2 distortedUV = center + delta * lens;
+
+    // تأثير التشتت — يفصل قنوات RGB قليلاً
+    float shift = dispersion * 0.008;
+    half r = composable.eval(distortedUV * size + float2(shift, 0.0) * size).r;
+    half g = composable.eval(distortedUV * size).g;
+    half b = composable.eval(distortedUV * size - float2(shift, 0.0) * size).b;
+    half4 color = half4(r, g, b, 1.0);
+
+    // Frosted Glass — تمزج اللون مع الأبيض الضبابي
+    float frosted = frost * 0.015;
+    color = mix(color, half4(1.0, 1.0, 1.0, 1.0), frosted);
+
+    // رفع التشبع قليلاً مثل iOS
+    float gray  = dot(color.rgb, half3(0.299, 0.587, 0.114));
+    color.rgb   = mix(half3(gray), color.rgb, 1.25);
+
+    return color;
+}
+"""
+
+// ─────────────────────────────────────────────
+// الـ Component الرئيسي
+// ─────────────────────────────────────────────
 @Composable
-fun LiquidGlass(
+fun LiquidGlassCard(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: Shape = LiquidGlassDefaults.RoundedShape,
-    style: LiquidGlassConfiguration = LocalLiquidGlassStyle.current ?: LiquidGlassDefaults.Frosted,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+    cornerRadius: Dp = 24.dp,
+    refraction: Float = 0.55f,     // انكسار الضوء (0..1)
+    frost: Float = 6f,             // درجة الضبابية (0..20)
+    dispersion: Float = 0.4f,      // تشتت الألوان (0..1)
+    glowAlpha: Float = 0.55f,      // شدة وهج الحافة
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val resolvedStyle = remember(style, shape) {
-        style.copy(shape = shape)
-    }
-    val liquidState = LocalLiquidState.current
-    val liquidEnabled = LocalLiquidGlassEnabled.current && liquidState != null
+    val shape = RoundedCornerShape(cornerRadius)
+    val density = LocalDensity.current
 
-    if (liquidEnabled) {
-        LiquidShaderSurface(
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        // ─── Android 13+ : AGSL Shader حقيقي ───
+        LiquidGlassShader(
+            onClick = onClick,
             modifier = modifier,
-            style = resolvedStyle,
-            contentPadding = contentPadding,
+            shape = shape,
+            cornerRadius = cornerRadius,
+            refraction = refraction,
+            frost = frost,
+            dispersion = dispersion,
+            glowAlpha = glowAlpha,
             content = content,
         )
     } else {
-        LiquidFallbackSurface(
+        // ─── Android 12 فما دون : Fallback جميل ───
+        LiquidGlassFallback(
+            onClick = onClick,
             modifier = modifier,
-            style = resolvedStyle,
-            contentPadding = contentPadding,
+            shape = shape,
+            cornerRadius = cornerRadius,
+            glowAlpha = glowAlpha,
             content = content,
         )
     }
 }
 
+// ─────────────────────────────────────────────
+// Android 13+ — AGSL Shader الحقيقي
+// ─────────────────────────────────────────────
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-private fun LiquidShaderSurface(
+private fun LiquidGlassShader(
+    onClick: () -> Unit,
     modifier: Modifier,
-    style: LiquidGlassConfiguration,
-    contentPadding: PaddingValues,
+    shape: RoundedCornerShape,
+    cornerRadius: Dp,
+    refraction: Float,
+    frost: Float,
+    dispersion: Float,
+    glowAlpha: Float,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val state = LocalLiquidState.current ?: return LiquidFallbackSurface(
-        modifier = modifier,
-        style = style,
-        contentPadding = contentPadding,
-        content = content,
-    )
+    var cardSize by remember { mutableStateOf(IntSize.Zero) }
+    val shader = remember { RuntimeShader(LIQUID_GLASS_SHADER) }
 
     Box(
         modifier = modifier
-            .shadow(
-                elevation = style.glow.elevation,
-                shape = style.shape,
-                ambientColor = style.glow.color.copy(alpha = style.glow.alpha),
-                spotColor = style.glow.color.copy(alpha = style.glow.alpha),
-            )
-            .liquid(state) {
-                refraction = style.refraction
-                curve = style.curve
-                edge = style.edge
-                tint = style.tint
-                saturation = style.saturation
-                dispersion = style.dispersion
-                contrast = style.contrast
-                frost = style.frost
-                shape = style.shape
+            .onSizeChanged { cardSize = it }
+            .clip(shape)
+            .graphicsLayer {
+                // نطبق الـ Shader كـ RenderEffect على كامل الـ layer
+                if (cardSize != IntSize.Zero) {
+                    shader.setFloatUniform("size",
+                        cardSize.width.toFloat(),
+                        cardSize.height.toFloat()
+                    )
+                    shader.setFloatUniform("refraction", refraction)
+                    shader.setFloatUniform("frost", frost)
+                    shader.setFloatUniform("dispersion", dispersion)
+
+                    renderEffect = RenderEffect
+                        .createRuntimeShaderEffect(shader, "composable")
+                        .asComposeRenderEffect()
+                }
             }
-            .clip(style.shape)
-            .background(style.highlight.color.copy(alpha = style.highlight.alpha))
-            .border(style.border.asBorderStroke(), style.shape)
-            .padding(contentPadding),
+            // طبقة الوهج والحواف المضيئة تُرسم فوق كل شيء
+            .drawWithContent {
+                drawContent()
+                drawLiquidGlassOverlay(
+                    size = size,
+                    cornerRadius = cornerRadius.toPx(),
+                    glowAlpha = glowAlpha,
+                )
+            }
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
         content = content,
     )
 }
 
+// ─────────────────────────────────────────────
+// Android < 13 — Fallback: Blur + Gradient Overlay
+// ─────────────────────────────────────────────
 @Composable
-private fun LiquidFallbackSurface(
+private fun LiquidGlassFallback(
+    onClick: () -> Unit,
     modifier: Modifier,
-    style: LiquidGlassConfiguration,
-    contentPadding: PaddingValues,
+    shape: RoundedCornerShape,
+    cornerRadius: Dp,
+    glowAlpha: Float,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Surface(
+    Box(
         modifier = modifier
-            .shadow(
-                elevation = style.elevation,
-                shape = style.shape,
-                ambientColor = Color.Black.copy(alpha = 0.12f),
-                spotColor = Color.Black.copy(alpha = 0.10f),
-            )
-            .clip(style.shape)
-            .blur(style.frost.coerceAtLeast(0.dp) / 8),
-        shape = style.shape,
-        color = style.tint.takeUnless { it == Color.Unspecified } ?: Color.White.copy(alpha = 0.18f),
-        border = style.border.asBorderStroke(),
-    ) {
-        Box(
-            modifier = Modifier
-                .background(style.highlight.color.copy(alpha = style.highlight.alpha))
-                .padding(contentPadding),
-            content = content,
-        )
-    }
+            .clip(shape)
+            .graphicsLayer {
+                // Blur عبر RenderEffect (متاح من Android 12)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    renderEffect = RenderEffect
+                        .createBlurEffect(18f, 18f, Shader.TileMode.CLAMP)
+                        .asComposeRenderEffect()
+                }
+            }
+            .drawWithContent {
+                drawContent()
+
+                // طبقة شفافة بيضاء (تعوض غياب الـ Shader)
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.22f),
+                            Color.White.copy(alpha = 0.08f),
+                        )
+                    )
+                )
+
+                drawLiquidGlassOverlay(
+                    size = size,
+                    cornerRadius = cornerRadius.toPx(),
+                    glowAlpha = glowAlpha,
+                )
+            }
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+        content = content,
+    )
 }
 
-private fun LiquidGlassBorder.asBorderStroke(): BorderStroke {
-    return BorderStroke(width = width, color = color)
+// ─────────────────────────────────────────────
+// رسم الحواف المضيئة والانعكاس الداخلي
+// يُستخدم في كلا الوضعين (Shader + Fallback)
+// ─────────────────────────────────────────────
+private fun DrawScope.drawLiquidGlassOverlay(
+    size: Size,
+    cornerRadius: Float,
+    glowAlpha: Float,
+) {
+    val strokeWidth = 1.2.dp.toPx()
+    val halfStroke = strokeWidth / 2f
+    val inset = halfStroke
+
+    // ── 1. الحافة الخارجية — بريق زجاجي ──
+    drawRoundRect(
+        brush = Brush.linearGradient(
+            colors = listOf(
+                Color.White.copy(alpha = glowAlpha),
+                Color.White.copy(alpha = glowAlpha * 0.3f),
+                Color.White.copy(alpha = glowAlpha * 0.1f),
+                Color.White.copy(alpha = glowAlpha * 0.5f),
+            ),
+            start = Offset(0f, 0f),
+            end   = Offset(size.width, size.height),
+        ),
+        topLeft     = Offset(inset, inset),
+        size        = Size(size.width - strokeWidth, size.height - strokeWidth),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius - inset),
+        style       = Stroke(width = strokeWidth),
+    )
+
+    // ── 2. وهج أعلى البطاقة — يحاكي انعكاس الضوء ──
+    drawRoundRect(
+        brush = Brush.verticalGradient(
+            colors = listOf(
+                Color.White.copy(alpha = 0.35f),
+                Color.White.copy(alpha = 0.0f),
+            ),
+            startY = 0f,
+            endY   = size.height * 0.45f,
+        ),
+        topLeft     = Offset(inset * 2, inset * 2),
+        size        = Size(size.width - inset * 4, size.height * 0.42f),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius - inset * 2),
+    )
+
+    // ── 3. بريق الزاوية العلوية اليسرى — نقطة انعكاس ──
+    drawCircle(
+        brush = Brush.radialGradient(
+            colors = listOf(
+                Color.White.copy(alpha = 0.5f),
+                Color.White.copy(alpha = 0.0f),
+            ),
+            center = Offset(size.width * 0.2f, size.height * 0.12f),
+            radius = size.width * 0.28f,
+        ),
+        center = Offset(size.width * 0.2f, size.height * 0.12f),
+        radius = size.width * 0.28f,
+    )
+
+    // ── 4. ظل داخلي سفلي — يعطي العمق ──
+    drawRoundRect(
+        brush = Brush.verticalGradient(
+            colors = listOf(
+                Color.Transparent,
+                Color.Black.copy(alpha = 0.06f),
+            ),
+            startY = size.height * 0.6f,
+            endY   = size.height,
+        ),
+        topLeft     = Offset(inset, inset),
+        size        = Size(size.width - strokeWidth, size.height - strokeWidth),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius - inset),
+    )
 }

@@ -1,5 +1,6 @@
 package com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen
 
+import LiquidGlassCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,7 +42,6 @@ import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlass
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassDefaults
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import com.almahmoudApp.al_mahmoudapp.feature.qotof.domain.model.QotofItem
@@ -179,12 +179,15 @@ private fun QotofCard(
     item: QotofItem,
     onClick: () -> Unit,
 ) {
-    LiquidGlass(
+    LiquidGlassCard(
+        onClick = {},
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = LiquidGlassDefaults.Crystal.shape,
-        style = LiquidGlassDefaults.Crystal,
+        refraction = 0.55f,
+        frost = 8f,
+        dispersion = 0.35f,
+        glowAlpha = 0.55f,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),

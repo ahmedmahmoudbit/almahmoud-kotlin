@@ -1,5 +1,6 @@
 package com.almahmoudApp.al_mahmoudapp.feature.doaa.presentation.components
 
+import LiquidGlassCard
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlass
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassDefaults
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -26,10 +26,13 @@ fun DoaaCard(
             .fillMaxWidth()
             .combinedClickable(onClick = {}, onLongClick = onLongClick),
     ) {
-        LiquidGlass(
+        LiquidGlassCard(
+            onClick = {},
             modifier = Modifier.fillMaxWidth(),
-            shape = LiquidGlassDefaults.CardShape,
-            style = LiquidGlassDefaults.Soft,
+            refraction = 0.55f,
+            frost = 8f,
+            dispersion = 0.35f,
+            glowAlpha = 0.55f,
         ) {
             Text(
                 text = text,

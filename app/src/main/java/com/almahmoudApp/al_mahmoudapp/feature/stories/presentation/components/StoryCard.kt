@@ -1,5 +1,6 @@
 package com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.components
 
+import LiquidGlassCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +21,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlass
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassDefaults
 import com.almahmoudApp.al_mahmoudapp.feature.stories.domain.model.StoryItem
 
@@ -35,10 +35,13 @@ fun StoryCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
     ) {
-        LiquidGlass(
+        LiquidGlassCard(
+            onClick = {},
             modifier = Modifier.fillMaxWidth(),
-            shape = LiquidGlassDefaults.CardShape,
-            style = LiquidGlassDefaults.Frosted,
+            refraction = 0.55f,
+            frost = 8f,
+            dispersion = 0.35f,
+            glowAlpha = 0.55f,
         ) {
             Row(
                 modifier = Modifier
