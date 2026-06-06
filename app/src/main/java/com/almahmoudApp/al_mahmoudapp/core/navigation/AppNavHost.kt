@@ -24,6 +24,8 @@ import com.almahmoudApp.al_mahmoudapp.feature.settings.presentation.screen.Setti
 import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.QuranRoute
 import com.example.almahmoud.doaa.DoaaRoute
+import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarListRoute
+import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarDetailsRoute
 import dev.chrisbanes.haze.HazeState
 
 @Composable
@@ -57,10 +59,11 @@ fun AppNavHost(
                 hazeState = hazeState,
                 onFeatureSelected = { key ->
                     when (key) {
-                        HomeFeatureKey.AYAT -> navController.navigate(AppDestination.Ayat.route)
+                        HomeFeatureKey.SOUND -> navController.navigate(AppDestination.Ayat.route)
                         HomeFeatureKey.QOTOF -> navController.navigate(AppDestination.Qotof.route)
                         HomeFeatureKey.STORIES -> navController.navigate(AppDestination.Stories.route)
                         HomeFeatureKey.DOAA -> navController.navigate(AppDestination.Doaa.route)
+                        HomeFeatureKey.AZKAR -> navController.navigate(AppDestination.AzkarList.route)
                         else -> Unit
                     }
                 },
@@ -111,6 +114,25 @@ fun AppNavHost(
         }
         composable(AppDestination.Doaa.route) {
             DoaaRoute(contentPadding = innerPadding)
+        }
+        composable(AppDestination.AzkarList.route) {
+            AzkarListRoute(
+                contentPadding = innerPadding,
+                onCategorySelected = { category ->
+                    navController.navigate(AppDestination.AzkarDetails.createRoute(category.ordinal))
+                },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = AppDestination.AzkarDetails.route,
+            arguments = listOf(navArgument("category") { type = NavType.IntType }),
+        ) { backStackEntry ->
+            AzkarDetailsRoute(
+                contentPadding = innerPadding,
+                categoryOrdinal = backStackEntry.arguments?.getInt("category") ?: 0,
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(AppDestination.Quran.route) {
             QuranRoute(

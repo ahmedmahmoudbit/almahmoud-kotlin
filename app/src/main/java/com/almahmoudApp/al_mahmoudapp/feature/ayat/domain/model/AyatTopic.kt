@@ -6,4 +6,5 @@ data class AyatTopic(
     val description: String,
     val backgroundUrl: String,
     val durationAsset: String,
+    val lottieRawRes: Int,
 )

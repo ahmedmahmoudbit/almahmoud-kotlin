@@ -13,6 +13,10 @@ sealed class AppDestination(val route: String) {
         fun createRoute(index: Int): String = "stories/details?index=$index"
     }
     data object Doaa : AppDestination("doaa")
+    data object AzkarList : AppDestination("azkar")
+    data object AzkarDetails : AppDestination("azkar/details?category={category}") {
+        fun createRoute(categoryOrdinal: Int): String = "azkar/details?category=$categoryOrdinal"
+    }
     data object Settings : AppDestination("settings")
     data object AyatSound : AppDestination("ayat/sound?topicId={topicId}") {
         fun createRoute(topicId: Int): String = "ayat/sound?topicId=$topicId"

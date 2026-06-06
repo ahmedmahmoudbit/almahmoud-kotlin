@@ -6,6 +6,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.qotof.domain.model.QotofItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 class QotofLocalDataSource @Inject constructor(
@@ -35,7 +36,7 @@ class QotofLocalDataSource @Inject constructor(
                         QotofItem(title = title, body = body)
                     }
                 }
-                .toList()
+                .toList().shuffled()
         }
     }
 

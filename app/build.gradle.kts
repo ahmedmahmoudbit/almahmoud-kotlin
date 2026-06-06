@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.coil.compose)
+    implementation("com.airbnb.android:lottie-compose:6.7.1")
     implementation(libs.dagger.hilt.android)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.liquid)
