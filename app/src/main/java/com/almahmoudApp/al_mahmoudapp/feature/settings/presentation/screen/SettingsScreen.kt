@@ -53,7 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.almahmoudApp.al_mahmoudapp.R
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze

@@ -33,6 +33,20 @@
     <string name="quran_choose_reader">Choose a reciter</string>
     <string name="quran_basmala">In the name of Allah, the Most Gracious, the Most Merciful</string>
     <string name="quran_verses_count">%1$d verses</string>
+    <string name="quran_page_with_number">Page %1$d</string>
+    <string name="quran_controls">Controls</string>
+    <string name="quran_back">Back</string>
+    <string name="quran_control_speed">Scroll speed</string>
+    <string name="quran_control_font">Font size</string>
+    <string name="quran_control_direction">Scroll direction</string>
+    <string name="quran_auto_scroll">Auto scroll</string>
+    <string name="quran_stop_scroll">Stop scroll</string>
+    <string name="quran_scroll_vertical">Down</string>
+    <string name="quran_scroll_horizontal">Right</string>
+    <string name="quran_speed_value">Speed: %1$.2f</string>
+    <string name="quran_font_value">Font: %1$d</string>
+    <string name="cancel">Cancel</string>
+    <string name="apply">Apply</string>
     <string name="qotof_title">Qotof</string>
     <string name="qotof_search">Search in Qotof</string>
     <string name="previous">Previous</string>
@@ -75,4 +89,9 @@
     <string name="doaa_copy_hint">Long press to copy</string>
     <string name="success">Success</string>
     <string name="sucsses_copy">Copied to clipboard</string>
+    <string name="quran_change_background">Change background</string>
+    <string name="quran_choose_background">Choose Background Video</string>
+    <string name="quran_options">Options</string>
+    <string name="quran_choose_surah">Choose Surah</string>
+    <string name="quran_loop">Repeat automatically</string>
 </resources>

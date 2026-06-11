@@ -91,7 +91,7 @@ sealed class BottomBarTab(
     )
 }
 
-private fun DrawScope.drawTabGlow(color: Color, alpha: Float) {
+public fun DrawScope.drawTabGlow(color: Color, alpha: Float) {
     if (alpha <= 0f) return
     drawCircle(
         brush = Brush.radialGradient(

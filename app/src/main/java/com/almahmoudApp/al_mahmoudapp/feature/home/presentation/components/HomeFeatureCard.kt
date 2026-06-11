@@ -76,14 +76,14 @@ fun HomeFeatureCard(
                 imageVector = feature.key.icon(),
                 contentDescription = null,
                 modifier = Modifier.size(28.dp),
-                tint = Color.White,   // أبيض يبدو أجمل على الزجاج
+                tint = Color.White,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(feature.key.titleRes()),
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White,  // أبيض مع ظل خفيف
+                    color = Color.White,
                     shadow = Shadow(
                         color = Color.Black.copy(alpha = 0.25f),
                         offset = Offset(0f, 1f),

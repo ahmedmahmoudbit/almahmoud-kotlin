@@ -68,8 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.decode.ImageSource
+import coil3.compose.AsyncImage
 import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
@@ -200,7 +199,6 @@ private fun QuranContent(
                 .padding(top = contentPadding.calculateTopPadding()),
         ) {
 
-            // ── item الهيدر يمتد على عمودين ──
             item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
                 Column(
                     modifier = Modifier

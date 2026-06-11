@@ -33,6 +33,20 @@
     <string name="quran_choose_reader">اختر قارئًا</string>
     <string name="quran_basmala">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</string>
     <string name="quran_verses_count">%1$d آيات</string>
+    <string name="quran_page_with_number">الصفحة %1$d</string>
+    <string name="quran_controls">التحكم</string>
+    <string name="quran_back">رجوع</string>
+    <string name="quran_control_speed">سرعة التمرير</string>
+    <string name="quran_control_font">حجم الخط</string>
+    <string name="quran_control_direction">اتجاه التمرير</string>
+    <string name="quran_auto_scroll">تمرير تلقائي</string>
+    <string name="quran_stop_scroll">إيقاف التمرير</string>
+    <string name="quran_scroll_vertical">للأسفل</string>
+    <string name="quran_scroll_horizontal">لليمين</string>
+    <string name="quran_speed_value">السرعة: %1$.2f</string>
+    <string name="quran_font_value">الخط: %1$d</string>
+    <string name="cancel">إلغاء</string>
+    <string name="apply">تطبيق</string>
     <string name="qotof_title">قطوف</string>
     <string name="qotof_search">ابحث في قطوف</string>
     <string name="previous">السابق</string>
@@ -75,4 +89,9 @@
     <string name="doaa_copy_hint">اضغط مطولًا للنسخ</string>
     <string name="success">نجاح</string>
     <string name="sucsses_copy">تم النسخ إلى الحافظة</string>
+    <string name="quran_change_background">تغيير الخلفية</string>
+    <string name="quran_choose_background">اختر فيديو الخلفية</string>
+    <string name="quran_options">الخيارات</string>
+    <string name="quran_choose_surah">اختر السورة</string>
+    <string name="quran_loop">إعادة المقطع تلقائيًا</string>
 </resources>

@@ -8,6 +8,7 @@ import android.graphics.Shader
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,10 +26,8 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.*
+import com.almahmoudApp.al_mahmoudapp.core.ui.components.drawTabGlow
 
-// ─────────────────────────────────────────────
-// AGSL Shader — محرك التأثير الحقيقي (Android 13+)
-// ─────────────────────────────────────────────
 private const val LIQUID_GLASS_SHADER = """
 uniform shader composable;
 uniform float2 size;
@@ -84,7 +83,6 @@ fun LiquidGlassCard(
     val density = LocalDensity.current
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        // ─── Android 13+ : AGSL Shader حقيقي ───
         LiquidGlassShader(
             onClick = onClick,
             modifier = modifier,
@@ -97,7 +95,6 @@ fun LiquidGlassCard(
             content = content,
         )
     } else {
-        // ─── Android 12 فما دون : Fallback جميل ───
         LiquidGlassFallback(
             onClick = onClick,
             modifier = modifier,
@@ -109,9 +106,6 @@ fun LiquidGlassCard(
     }
 }
 
-// ─────────────────────────────────────────────
-// Android 13+ — AGSL Shader الحقيقي
-// ─────────────────────────────────────────────
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 private fun LiquidGlassShader(
@@ -128,44 +122,54 @@ private fun LiquidGlassShader(
     var cardSize by remember { mutableStateOf(IntSize.Zero) }
     val shader = remember { RuntimeShader(LIQUID_GLASS_SHADER) }
 
-    Box(
-        modifier = modifier
-            .onSizeChanged { cardSize = it }
-            .clip(shape)
-            .graphicsLayer {
-                // نطبق الـ Shader كـ RenderEffect على كامل الـ layer
-                if (cardSize != IntSize.Zero) {
-                    shader.setFloatUniform("size",
-                        cardSize.width.toFloat(),
-                        cardSize.height.toFloat()
-                    )
-                    shader.setFloatUniform("refraction", refraction)
-                    shader.setFloatUniform("frost", frost)
-                    shader.setFloatUniform("dispersion", dispersion)
+    Box(modifier = modifier.onSizeChanged { cardSize = it }) {
 
+        // ── الطبقة الخلفية: Blur حقيقي للخلفية ──
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clip(shape)
+                .graphicsLayer {
+                    // Blur للخلفية فقط
                     renderEffect = RenderEffect
-                        .createRuntimeShaderEffect(shader, "composable")
+                        .createBlurEffect(20f, 20f, Shader.TileMode.CLAMP)
                         .asComposeRenderEffect()
+                    alpha = 0.99f // يجبر compose على رسم layer منفصل
                 }
-            }
-            // طبقة الوهج والحواف المضيئة تُرسم فوق كل شيء
-            .drawWithContent {
-                drawContent()
-                drawLiquidGlassOverlay(
-                    size = size,
-                    cornerRadius = cornerRadius.toPx(),
-                    glowAlpha = glowAlpha,
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.32f),
+                            Color.White.copy(alpha = 0.20f)
+                        )
+                    )
                 )
-            }
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-        content = content,
-    )
+        )
+
+        // ── الطبقة الأمامية: Shader + المحتوى ──
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clip(shape)
+                .drawWithContent {
+                    drawContent()
+                }
+                .drawWithContent {
+                    drawContent()
+                    drawLiquidGlassOverlay(
+                        size = size,
+                        cornerRadius = cornerRadius.toPx(),
+                        glowAlpha = glowAlpha,
+                    )
+                }
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+            content = content,
+        )
+    }
 }
 
-// ─────────────────────────────────────────────
-// Android < 13 — Fallback: Blur + Gradient Overlay
-// ─────────────────────────────────────────────
+
 @Composable
 private fun LiquidGlassFallback(
     onClick: () -> Unit,

@@ -43,7 +43,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.components.HomeFeatureCard
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.state.HomeUiState
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.viewmodel.HomeViewModel
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import androidx.compose.ui.graphics.Color

@@ -4,6 +4,13 @@ import LiquidGlassCard
 import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -69,15 +76,39 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Wallpaper
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontSynthesis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.AppButton
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
@@ -103,6 +134,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.text.HtmlCompat
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.layout.heightIn
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.QuranVideoBackground
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.rememberQuranVideoPlayerState
+
+
 
 @Composable
 fun QuranActionRoute(
@@ -622,6 +661,7 @@ private fun QuranVerseDetailsSheet(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuranAudioRoute(
     contentPadding: PaddingValues,
@@ -632,131 +672,657 @@ fun QuranAudioRoute(
     page: Int,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: QuranViewModel = hiltViewModel(),
 ) {
-    Surface(
-        modifier = modifier
-            .fillMaxSize()
-            .haze(state = hazeState),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        LiquidHost(modifier = Modifier.fillMaxSize()) {
-            var currentPage by rememberSaveable { mutableIntStateOf(page.coerceAtLeast(1)) }
-            var isPlaying by rememberSaveable { mutableStateOf(false) }
-            var isPrepared by rememberSaveable { mutableStateOf(false) }
-            var positionMs by rememberSaveable { mutableIntStateOf(0) }
-            var durationMs by rememberSaveable { mutableIntStateOf(1) }
-            var player by remember { mutableStateOf<MediaPlayer?>(null) }
+    var currentReaderName by rememberSaveable { mutableStateOf(readerName) }
+    var currentReaderImage by rememberSaveable { mutableStateOf(readerImage) }
+    var currentAudioBaseUrl by rememberSaveable { mutableStateOf(audioBaseUrl) }
+    var currentPage by rememberSaveable { mutableIntStateOf(page.coerceAtLeast(1)) }
 
-            DisposableEffect(Unit) {
-                onDispose {
-                    player?.release()
-                    player = null
-                }
+    var isPlaying by rememberSaveable { mutableStateOf(false) }
+    var isPrepared by rememberSaveable { mutableStateOf(false) }
+    var isLooping by rememberSaveable { mutableStateOf(false) }
+    var positionMs by rememberSaveable { mutableIntStateOf(0) }
+    var durationMs by rememberSaveable { mutableIntStateOf(1) }
+    var player by remember { mutableStateOf<MediaPlayer?>(null) }
+    var loopSnackbarMessage by remember { mutableStateOf<String?>(null) }
+    val videoState = rememberQuranVideoPlayerState()
+
+    val quranState by viewModel.state.collectAsStateWithLifecycle()
+
+    var showSurahSheet by remember { mutableStateOf(false) }
+    var showReaderSheet by remember { mutableStateOf(false) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            player?.release()
+            player = null
+        }
+    }
+
+    val audioUrl = quranAudioUrl(currentAudioBaseUrl, currentPage)
+
+    LaunchedEffect(audioUrl) {
+        player?.release()
+        val mediaPlayer = MediaPlayer()
+        player = mediaPlayer
+        isPrepared = false
+        positionMs = 0
+        durationMs = 1
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+        mediaPlayer.setDataSource(audioUrl)
+        mediaPlayer.isLooping = isLooping
+        mediaPlayer.setOnPreparedListener {
+            isPrepared = true
+            durationMs = it.duration.coerceAtLeast(1)
+            if (isPlaying) {
+                it.start()
             }
-
-            val audioUrl = quranAudioUrl(audioBaseUrl, currentPage)
-
-            LaunchedEffect(audioUrl) {
-                player?.release()
-                val mediaPlayer = MediaPlayer()
-                player = mediaPlayer
-                isPrepared = false
+        }
+        mediaPlayer.setOnCompletionListener {
+            if (!isLooping) {
+                isPlaying = false
                 positionMs = 0
-                durationMs = 1
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-                mediaPlayer.setDataSource(audioUrl)
-                mediaPlayer.setOnPreparedListener {
-                    isPrepared = true
-                    durationMs = it.duration.coerceAtLeast(1)
-                }
-                mediaPlayer.setOnCompletionListener {
-                    isPlaying = false
-                    positionMs = 0
-                }
-                mediaPlayer.prepareAsync()
             }
+        }
+        mediaPlayer.prepareAsync()
+    }
 
-            LaunchedEffect(isPlaying, isPrepared) {
-                if (isPlaying && isPrepared) {
-                    player?.start()
-                    while (player?.isPlaying == true) {
-                        positionMs = player?.currentPosition ?: 0
-                        durationMs = player?.duration?.coerceAtLeast(1) ?: 1
-                        kotlinx.coroutines.delay(500)
+    LaunchedEffect(isLooping) {
+        player?.isLooping = isLooping
+    }
+
+    LaunchedEffect(loopSnackbarMessage) {
+        if (loopSnackbarMessage != null) {
+            delay(2000)
+            loopSnackbarMessage = null
+        }
+    }
+
+    LaunchedEffect(isPlaying, isPrepared) {
+        if (isPlaying && isPrepared) {
+            player?.start()
+            while (player?.isPlaying == true) {
+                positionMs = player?.currentPosition ?: 0
+                durationMs = player?.duration?.coerceAtLeast(1) ?: 1
+                kotlinx.coroutines.delay(500)
+            }
+        }
+    }
+
+    // Infinite Visualizer animation values
+    val infiniteTransition = rememberInfiniteTransition(label = "equalizer")
+    val waveScale1 by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.35f,
+        animationSpec = infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(1400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave1"
+    )
+    val waveAlpha1 by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 0.0f,
+        animationSpec = infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(1400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "waveAlpha1"
+    )
+
+    val waveScale2 by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.55f,
+        animationSpec = infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave2"
+    )
+    val waveAlpha2 by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.0f,
+        animationSpec = infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "waveAlpha2"
+    )
+
+    // ── Full-screen video background ──────────────────────────────────
+    QuranVideoBackground(
+        state = videoState,
+        modifier = modifier.fillMaxSize(),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // Top Bar with Options Menu
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                // Glass back button
+                LiquidGlassCard(
+                    onClick = onBack,
+                    modifier = Modifier.size(44.dp),
+                    cornerRadius = 999.dp,
+                    refraction = 0.55f,
+                    frost = 8f,
+                    dispersion = 0.20f,
+                    glowAlpha = 0.70f,
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                }
+
+                // Options button with animated slide-down panel
+                var showOptionsMenu by remember { mutableStateOf(false) }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    LiquidGlassCard(
+                        onClick = { showOptionsMenu = !showOptionsMenu },
+                        modifier = Modifier.size(44.dp),
+                        cornerRadius = 999.dp,
+                        refraction = 0.55f,
+                        frost = 8f,
+                        dispersion = 0.20f,
+                        glowAlpha = 0.70f,
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Tune,
+                                contentDescription = stringResource(R.string.quran_options),
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp),
+                            )
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        visible = showOptionsMenu,
+                        enter = fadeIn(tween(200)) + expandVertically(),
+                        exit = fadeOut(tween(200)) + shrinkVertically(),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .width(210.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFF0A1628).copy(alpha = 0.96f))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.White.copy(alpha = 0.12f),
+                                    shape = RoundedCornerShape(16.dp),
+                                )
+                                .padding(vertical = 6.dp),
+                        ) {
+                            // Change Background option
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showOptionsMenu = false
+                                        videoState.showVideoPicker = true
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.quran_change_background),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Icon(
+                                    imageVector = Icons.Rounded.Wallpaper,
+                                    contentDescription = null,
+                                    tint = Color(0xFF4DD0C4),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                            // Divider line
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(0.5.dp)
+                                    .background(Color.White.copy(alpha = 0.10f))
+                            )
+                            // Change Surah option
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showOptionsMenu = false
+                                        showSurahSheet = true
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.quran_choose_surah),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                                    contentDescription = null,
+                                    tint = Color(0xFF4DD0C4),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                            // Divider line
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(0.5.dp)
+                                    .background(Color.White.copy(alpha = 0.10f))
+                            )
+                            // Change Reader option
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showOptionsMenu = false
+                                        showReaderSheet = true
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.quran_choose_reader),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Icon(
+                                    imageVector = Icons.Rounded.Person,
+                                    contentDescription = null,
+                                    tint = Color(0xFF4DD0C4),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+            Spacer(modifier = Modifier.weight(0.6f))
+
+            // Center Circular Reader Image and Equalizer Pulse Visualizer
+            Box(
+                modifier = Modifier.size(220.dp),
+                contentAlignment = Alignment.Center
             ) {
-                QuranTopBar(title = readerName.ifBlank { stringResource(R.string.quran_audio) }, onBack = onBack)
-                Spacer(modifier = Modifier.height(12.dp))
+                // Pulse waves around the circle (only animate if playing)
+                if (isPlaying && isPrepared) {
+                    // Outer pulse 1
+                    Box(
+                        modifier = Modifier
+                            .size(160.dp)
+                            .graphicsLayer(
+                                scaleX = waveScale1,
+                                scaleY = waveScale1,
+                                alpha = waveAlpha1
+                            )
+                            .border(3.dp, Color.White, CircleShape)
+                    )
+                    // Outer pulse 2
+                    Box(
+                        modifier = Modifier
+                            .size(160.dp)
+                            .graphicsLayer(
+                                scaleX = waveScale2,
+                                scaleY = waveScale2,
+                                alpha = waveAlpha2
+                            )
+                            .border(1.5.dp, Color.White, CircleShape)
+                    )
+                }
+
+                // Main circular reader card
                 LiquidGlassCard(
                     onClick = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(260.dp),
-                    refraction = 0.55f,
-                    frost = 8f,
-                    dispersion = 0.35f,
-                    glowAlpha = 0.55f,
+                    modifier = Modifier.size(160.dp),
+                    cornerRadius = 999.dp,
+                    refraction = 0.45f,
+                    frost = 4f,
+                    dispersion = 0.30f,
+                    glowAlpha = 0.80f,
                 ) {
                     AsyncImage(
-                        model = readerImage,
-                        contentDescription = readerName,
+                        model = currentReaderImage,
+                        contentDescription = currentReaderName,
                         placeholder = painterResource(R.drawable.home_mosque_skyline),
                         error = painterResource(R.drawable.home_mosque_skyline),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Reader and Surah details
+            Text(
+                text = currentReaderName,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            val currentSurah = quranState.content?.surahs?.firstOrNull { it.pageNumber == currentPage }
+            val surahLabel = currentSurah?.nameArabic ?: "${stringResource(R.string.quran_page)} $currentPage"
+
+            Text(
+                text = surahLabel,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White.copy(alpha = 0.75f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // ── Progress slider centered at bottom ────────────────────────────
+            val currentPosStr = remember(positionMs) {
+                val sec = (positionMs / 1000) % 60
+                val min = (positionMs / 1000) / 60
+                String.format("%02d:%02d", min, sec)
+            }
+            val durationStr = remember(durationMs) {
+                val totalSec = (durationMs / 1000)
+                if (totalSec <= 0) "00:00" else {
+                    val sec = totalSec % 60
+                    val min = totalSec / 60
+                    String.format("%02d:%02d", min, sec)
+                }
+            }
+
+            Slider(
+                value = positionMs.toFloat(),
+                onValueChange = { newValue ->
+                    val seekTo = newValue.toInt()
+                    positionMs = seekTo
+                    player?.seekTo(seekTo)
+                },
+                valueRange = 0f..durationMs.toFloat().coerceAtLeast(1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
                 Text(
-                    text = readerName,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    text = currentPosStr,
+                    color = Color.White.copy(alpha = 0.55f),
+                    style = MaterialTheme.typography.labelSmall,
                 )
                 Text(
-                    text = "${stringResource(R.string.quran_page)} $currentPage",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    text = durationStr,
+                    color = Color.White.copy(alpha = 0.55f),
+                    style = MaterialTheme.typography.labelSmall,
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Slider(
-                    value = positionMs.toFloat(),
-                    onValueChange = { newValue ->
-                        val seekTo = newValue.toInt()
-                        positionMs = seekTo
-                        player?.seekTo(seekTo)
-                    },
-                    valueRange = 0f..durationMs.toFloat().coerceAtLeast(1f),
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // ── Mini-player card at the bottom ────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color(0xFF0A1628).copy(alpha = 0.92f))
+                    .border(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(24.dp),
+                    )
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+            ) {
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                AppButton(
-                    text = if (isPlaying) stringResource(R.string.pause) else stringResource(R.string.play),
-                    onClick = {
-                        if (isPrepared) {
-                            if (player?.isPlaying == true) {
-                                player?.pause()
-                                isPlaying = false
-                            } else {
-                                player?.start()
-                                isPlaying = true
-                            }
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // Surah + Reader info on start side
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = surahLabel,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF4DD0C4),
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = currentReaderName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.65f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // Repeat toggle button – turns green when active
+                    IconButton(
+                        onClick = {
+                            isLooping = !isLooping
+                            loopSnackbarMessage = if (isLooping) "تم تفعيل إعادة التشغيل" else "تم إيقاف إعادة التشغيل"
+                        },
+                        modifier = Modifier.size(40.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Repeat,
+                            contentDescription = stringResource(R.string.quran_loop),
+                            tint = if (isLooping) Color(0xFF4CAF50) else Color.White.copy(alpha = 0.65f),
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Large white circle – Play / Pause
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .clickable {
+                                if (isPrepared) {
+                                    if (player?.isPlaying == true) {
+                                        player?.pause()
+                                        isPlaying = false
+                                    } else {
+                                        player?.start()
+                                        isPlaying = true
+                                    }
+                                } else {
+                                    isPlaying = true
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (isPlaying && !isPrepared) {
+                            CircularProgressIndicator(
+                                color = Color(0xFF1A1A2E),
+                                modifier = Modifier.size(28.dp),
+                                strokeWidth = 2.5.dp,
+                            )
                         } else {
-                            isPlaying = true
+                            Icon(
+                                imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                                contentDescription = if (isPlaying) stringResource(R.string.pause) else stringResource(R.string.play),
+                                tint = Color(0xFF1A1A2E),
+                                modifier = Modifier.size(30.dp),
+                            )
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        // ── Loop toggle notification overlay ─────────────────────────────────
+        AnimatedVisibility(
+            visible = loopSnackbarMessage != null,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 96.dp),
+            enter = fadeIn(tween(250)) + slideInVertically(initialOffsetY = { -it }),
+            exit = fadeOut(tween(250)) + slideOutVertically(targetOffsetY = { -it }),
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(Color(0xFF0A2218).copy(alpha = 0.96f))
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFF4CAF50).copy(alpha = 0.50f),
+                        shape = RoundedCornerShape(32.dp),
+                    )
+                    .padding(horizontal = 24.dp, vertical = 10.dp),
+            ) {
+                Text(
+                    text = loopSnackbarMessage ?: "",
+                    color = Color(0xFF4CAF50),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 )
+            }
+        }
+    }
+
+    // Surah selection sheet
+    if (showSurahSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSurahSheet = false },
+            containerColor = Color(0xFF0D1B2E),
+            scrimColor = Color.Black.copy(alpha = 0.6f)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.quran_choose_surah),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+                    quranState.content?.surahs?.let { surahs ->
+                        items(surahs.size) { index ->
+                            val surah = surahs[index]
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        currentPage = surah.pageNumber
+                                        showSurahSheet = false
+                                        isPlaying = false
+                                        isPrepared = false
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "${surah.number}. ${surah.nameEnglish}", color = Color.White)
+                                Text(text = surah.nameArabic, color = Color(0xFFFFD54F))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Reader selection sheet
+    if (showReaderSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showReaderSheet = false },
+            containerColor = Color(0xFF0D1B2E),
+            scrimColor = Color.Black.copy(alpha = 0.6f)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.quran_choose_reader),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+                    quranState.content?.readers?.let { readers ->
+                        items(readers.size) { index ->
+                            val reader = readers[index]
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        currentReaderName = reader.name
+                                        currentReaderImage = reader.imageUrl
+                                        currentAudioBaseUrl = reader.audioBaseUrl
+                                        showReaderSheet = false
+                                        isPlaying = false
+                                        isPrepared = false
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AsyncImage(
+                                    model = reader.imageUrl,
+                                    contentDescription = reader.name,
+                                    placeholder = painterResource(R.drawable.home_mosque_skyline),
+                                    error = painterResource(R.drawable.home_mosque_skyline),
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.1f))
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(text = reader.name, color = Color.White)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -803,10 +1369,10 @@ private fun QuranReaderCard(
         dispersion = 0.35f,
         glowAlpha = 0.55f,
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f),
         ) {
             AsyncImage(
                 model = reader.imageUrl,
@@ -814,16 +1380,30 @@ private fun QuranReaderCard(
                 placeholder = painterResource(R.drawable.home_mosque_skyline),
                 error = painterResource(R.drawable.home_mosque_skyline),
                 contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Box(
                 modifier = Modifier
-                    .size(72.dp)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .clip(CircleShape),
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.5f)
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.75f),
+                            )
+                        )
+                    ),
             )
             Text(
                 text = reader.name,
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = Color.White,
                 textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
             )
         }
     }
