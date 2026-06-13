@@ -6,6 +6,7 @@ sealed class AppDestination(val route: String) {
     data object Onboarding : AppDestination("onboarding")
     data object Home : AppDestination("home")
     data object Quran : AppDestination("quran")
+    data object Prayer : AppDestination("prayer")
     data object Ayat : AppDestination("ayat")
     data object Qotof : AppDestination("qotof")
     data object Stories : AppDestination("stories")

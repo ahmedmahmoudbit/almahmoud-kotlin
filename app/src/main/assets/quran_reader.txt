@@ -1,20 +1,20 @@
-احمد العجمي,https://server10.mp3quran.net/ajm/128/,https://drive.google.com/file/d/1DHNV2GYZcoWODbNIPMJ4eqRjlT19pCu8/preview
-ابو بكر الشاطري,https://server11.mp3quran.net/shatri/,https://drive.google.com/file/d/1-H5b0-plz5NiYjVUlUz5TWDjyseuFsNg/preview
-أحمد اللحدان,https://ia801003.us.archive.org/26/items/002_20190712/,https://drive.google.com/file/d/1a25MPKqB8gj0s-xIKHTn1LY1jcGNNBGk/preview
-أحمد النفيس,https://ia801003.us.archive.org/26/items/002_20190712/,https://drive.google.com/file/d/13YwYNyVWQUYJwcCgCvw9G7D-yAy_h9Vf/preview
-ابراهيم الاخضر,https://server6.mp3quran.net/akdr/,https://drive.google.com/file/d/11kWbbCdVzsn1EaRJH_3TyqYDaHC5yXr7/preview
-ادريس ابكر,https://server6.mp3quran.net/abkr/,https://drive.google.com/file/d/1JbRD1T2sYoSor1Ux8R5PaB9lmVpczCik/preview
-خالد الجليل,https://server10.mp3quran.net/jleel/,https://drive.google.com/file/d/18tvAJlDPn3jX9U5YjnHu7Ur5IK3z03no/preview
-داود حمزة,https://ia902608.us.archive.org/19/items/56kb--dawood---7amza-----mp3--full--mushaf--quran--114--sora---/,https://drive.google.com/file/d/1ZdKw5d5sL92_mp6MfvW79MgD1sAx5Rcp/preview
-رعد الكردي,https://ia801608.us.archive.org/6/items/Raad-Al_Kurdi/,https://drive.google.com/file/d/1oqn6N27wXaB9qiKXgGl5RJGQipj_PJnk/preview
+احمد العجمي,https://server10.mp3quran.net/ajm/128/,https://drive.usercontent.google.com/download?id=1DHNV2GYZcoWODbNIPMJ4eqRjlT19pCu8&export=view&authuser=0
+ابو بكر الشاطري,https://server11.mp3quran.net/shatri/,https://drive.usercontent.google.com/download?id=1-H5b0-plz5NiYjVUlUz5TWDjyseuFsNg&export=view&authuser=0
+أحمد اللحدان,https://ia801003.us.archive.org/26/items/002_20190712/,https://drive.usercontent.google.com/download?id=1a25MPKqB8gj0s-xIKHTn1LY1jcGNNBGk&export=view&authuser=0
+أحمد النفيس,https://ia801003.us.archive.org/26/items/002_20190712/,https://drive.usercontent.google.com/download?id=13YwYNyVWQUYJwcCgCvw9G7D-yAy_h9Vf&export=view&authuser=0
+ابراهيم الاخضر,https://server6.mp3quran.net/akdr/,https://drive.usercontent.google.com/download?id=11kWbbCdVzsn1EaRJH_3TyqYDaHC5yXr7&export=view&authuser=0
+ادريس ابكر,https://server6.mp3quran.net/abkr/,https://drive.usercontent.google.com/download?id=1JbRD1T2sYoSor1Ux8R5PaB9lmVpczCik&export=view&authuser=0
+خالد الجليل,https://server10.mp3quran.net/jleel/,https://drive.usercontent.google.com/download?id=18tvAJlDPn3jX9U5YjnHu7Ur5IK3z03no&export=view&authuser=0
+داود حمزة,https://ia902608.us.archive.org/19/items/56kb--dawood---7amza-----mp3--full--mushaf--quran--114--sora---/,https://drive.usercontent.google.com/download?id=1ZdKw5d5sL92_mp6MfvW79MgD1sAx5Rcp&export=view&authuser=0
+رعد الكردي,https://ia801608.us.archive.org/6/items/Raad-Al_Kurdi/,https://drive.usercontent.google.com/download?id=1oqn6N27wXaB9qiKXgGl5RJGQipj_PJnk&export=view&authuser=0
 سعد الغامدي,https://server7.mp3quran.net/s_gmd/,https://quran-uni.com/wp-content/uploads/saad-alghamedi.jpg
-سعود الشريم,https://server7.mp3quran.net/shur/,https://drive.google.com/file/d/1j7OcIBwOvslokN2USw3jaRum6dwP_LzP/preview
-الشحات محمد أنور,https://ia801304.us.archive.org/17/items/way2sona_20151219_2128/,https://drive.google.com/file/d/1hm1l51rUCPO5oX8ETC9eLs9BRmakefQr/preview
+سعود الشريم,https://server7.mp3quran.net/shur/,https://drive.usercontent.google.com/download?id=1j7OcIBwOvslokN2USw3jaRum6dwP_LzP&export=view&authuser=0
+الشحات محمد أنور,https://ia801304.us.archive.org/17/items/way2sona_20151219_2128/,https://drive.usercontent.google.com/download?id=1hm1l51rUCPO5oX8ETC9eLs9BRmakefQr&export=view&authuser=0
 محمد الطبلاوي,https://server12.mp3quran.net/tblawi/,https://drive.usercontent.google.com/download?id=1l6qaH_QavW4WIZJMr_0pN--h-FTlAZH0&export=view&authuser=0
-عبد الباسط عبد الصمد,https://server13.mp3quran.net/basit_mjwd/,https://drive.google.com/file/d/1upRxwSJLNxdwc6LpL5tI8wUjg5nj7arM/preview
+عبد الباسط عبد الصمد,https://server13.mp3quran.net/basit_mjwd/,https://drive.usercontent.google.com/download?id=1upRxwSJLNxdwc6LpL5tI8wUjg5nj7arM&export=view&authuser=0
 عبد الرحمن السديس,https://server11.mp3quran.net/sds/,https://drive.usercontent.google.com/download?id=1z5R9vXd4xm8dVvZSvQIXN-EvK58hWmsE&export=view&authuser=0
 عبد الله الموسى,https://server14.mp3quran.net/mousa/Rewayat-Hafs-A-n-Assem/,https://drive.usercontent.google.com/download?id=1-AzxGa4ghkFVhAjy4GAjtUY3u49T1V_u&export=view&authuser=0
-فارس عباد,https://server8.mp3quran.net/frs_a/,https://drive.google.com/file/d/1iE7L2CAsqstsZmIRCVRwS3sKze1jCyVq/preview
+فارس عباد,https://server8.mp3quran.net/frs_a/,https://drive.usercontent.google.com/download?id=1iE7L2CAsqstsZmIRCVRwS3sKze1jCyVq&export=view&authuser=0
 ماهر المعيقلي,https://server12.mp3quran.net/maher/,https://drive.usercontent.google.com/download?id=16-Dj5eTuNGg9XV1BT8Weqzxi-1dwvgpm&export=view&authuser=0
 محمد أيوب,https://server8.mp3quran.net/ayyub/,https://drive.usercontent.google.com/download?id=1yrXVlizeDHqg48A5jc1SjTpUvI-LjHOb&export=view&authuser=0
 محمد حسان,https://ia800405.us.archive.org/30/items/Mohamed-Hassan-Quran/,https://almelnoujoum.com/wp-content/uploads/2026/05/file_00000000758471f4abfc11945a698fff.png
@@ -22,7 +22,7 @@
 محمود خليل الحصري,https://server13.mp3quran.net/husr/,https://drive.usercontent.google.com/download?id=1y--frSKsfjYJSWLIwQs94EafMZXKrqg8&export=view&authuser=0
 محمود علي البنا,https://server8.mp3quran.net/bna/,https://drive.usercontent.google.com/download?id=15hN1nt_sKY3A5mueWNXgdTar-aKzrL68&export=view&authuser=0
 مشاري العفاسي,https://server8.mp3quran.net/afs/,https://drive.usercontent.google.com/download?id=146SuDDhue41YD2hkXdDlB2PWhaNIy8k_&export=view&authuser=0
-ناصر القطامي,https://server6.mp3quran.net/qtm/,https://drive.google.com/uc?export=view&id=1nJKeGvfaiVa5KzYBaMCe4-bx9s4uANVE
+ناصر القطامي,https://server6.mp3quran.net/qtm/,https://drive.usercontent.google.com/download?id=1nJKeGvfaiVa5KzYBaMCe4-bx9s4uANVE&export=view&authuser=0
 هزاع البلوشي,https://ia801208.us.archive.org/33/items/Quran-Huzza-Al_Baloushi/,https://drive.usercontent.google.com/download?id=1BEOsO2UeLMvIm-lYXRJU1zaugrGZrHnE&export=view&authuser=0
 وديع اليمني,https://ia801200.us.archive.org/14/items/wadie_alyamni/,https://drive.usercontent.google.com/download?id=1x_uJD290M4jVM1iq56GThZvGb405DdQP&export=view&authuser=0
 ياسر الدوسري,https://server11.mp3quran.net/yasser/,https://drive.usercontent.google.com/download?id=1xHkREE9GdFVDqtVVtxfuzHFku7jOqdb-&export=view&authuser=0

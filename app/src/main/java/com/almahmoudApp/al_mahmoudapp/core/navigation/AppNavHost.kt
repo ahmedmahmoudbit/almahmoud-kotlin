@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatRoute
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatSoundRoute
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.screen.HomeRoute
+import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen.PrayerRoute
 import com.almahmoudApp.al_mahmoudapp.feature.onboarding.presentation.screen.OnboardingRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranActionRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranAudioRoute
@@ -62,11 +63,19 @@ fun AppNavHost(
                         HomeFeatureKey.SOUND -> navController.navigate(AppDestination.Ayat.route)
                         HomeFeatureKey.QOTOF -> navController.navigate(AppDestination.Qotof.route)
                         HomeFeatureKey.STORIES -> navController.navigate(AppDestination.Stories.route)
+                        HomeFeatureKey.PRAYER -> navController.navigate(AppDestination.Prayer.route)
                         HomeFeatureKey.DOAA -> navController.navigate(AppDestination.Doaa.route)
                         HomeFeatureKey.AZKAR -> navController.navigate(AppDestination.AzkarList.route)
                         else -> Unit
                     }
                 },
+            )
+        }
+        composable(AppDestination.Prayer.route) {
+            PrayerRoute(
+                contentPadding = innerPadding,
+                hazeState = hazeState,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(AppDestination.Ayat.route) {
