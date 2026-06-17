@@ -1,5 +1,5 @@
 package com.almahmoudApp.al_mahmoudapp.core.ui.components
-import android.util.Log
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -91,7 +91,7 @@ sealed class BottomBarTab(
     )
 }
 
-public fun DrawScope.drawTabGlow(color: Color, alpha: Float) {
+ fun DrawScope.drawTabGlow(color: Color, alpha: Float) {
     if (alpha <= 0f) return
     drawCircle(
         brush = Brush.radialGradient(
