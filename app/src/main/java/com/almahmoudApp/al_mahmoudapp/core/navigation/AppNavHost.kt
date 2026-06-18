@@ -17,7 +17,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.onboarding.presentation.screen.Onb
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranActionRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranAudioRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranReadersRoute
-import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranTextRoute
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranTextScreen
 import com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen.QotofRoute
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoryDetailsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoriesRoute
@@ -228,7 +228,7 @@ fun AppNavHost(
                 navArgument("name") { type = NavType.StringType },
             ),
         ) { backStackEntry ->
-            QuranTextRoute(
+            QuranTextScreen(
                 contentPadding = innerPadding,
                 hazeState = hazeState,
                 surahNumber = backStackEntry.arguments?.getInt("surahNumber") ?: 1,

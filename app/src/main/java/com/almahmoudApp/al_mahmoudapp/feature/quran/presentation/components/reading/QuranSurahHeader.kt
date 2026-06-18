@@ -26,13 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.almahmoudApp.al_mahmoudapp.R
-//import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.reading.QuranReadingExtensions.toArabicNumerals
 
-/**
- * Decorative surah title header. A bordered, softly tinted frame (non-glass) holds the
- * surah name in calligraphic font between two book medallions, with page/verse meta below.
- * Inspired by the surah-header ornament in the Flutter reference app.
- */
+
 @Composable
 fun QuranSurahHeader(
     surahName: String,

@@ -19,14 +19,6 @@ private fun digitToArabic(digit: Char): Char = when (digit) {
     else -> digit
 }
 
-/**
- * The ornamental end-of-verse marker inserted inline after each verse's text, mirroring
- * the mushaf convention used in the Flutter reference app. Encloses the Arabic verse
- * number inside an Arabic ornamental parenthesis (۝).
- */
-fun verseEndMarker(verseNumber: Int): String =
-    " \u06DD${verseNumber.toArabicNumerals()} "
-
 /** Strips HTML tags from tafseer/maany payloads so they render as plain text. */
 fun stripHtml(text: String): String =
     HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim()
