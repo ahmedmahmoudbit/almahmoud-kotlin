@@ -100,6 +100,10 @@
     <string name="prayer_no_data">لا توجد بيانات مواقيت صلاة متاحة حتى الآن.</string>
     <string name="prayer_location_permission_required">نحتاج إلى إذن الموقع لاستخدام موقعك الحالي.</string>
     <string name="prayer_location_required">المدينة والدولة مطلوبتان.</string>
+    <string name="prayer_refresh">تحديث</string>
+    <string name="prayer_options">الخيارات</string>
+    <string name="prayer_adhan">الأذان</string>
+    <string name="prayer_iqamah">الإقامة</string>
     <string name="success">نجاح</string>
     <string name="sucsses_copy">تم النسخ إلى الحافظة</string>
     <string name="quran_change_background">تغيير الخلفية</string>

@@ -1,10 +1,14 @@
 package com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen
 
+import LiquidGlassCard
 import android.Manifest
+import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,17 +26,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.EditLocationAlt
+import androidx.compose.material.icons.rounded.MyLocation
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -41,7 +45,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +58,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,11 +67,16 @@ import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.domain.model.PrayerDay
+import com.almahmoudApp.al_mahmoudapp.feature.prayer.domain.model.PrayerLocation
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.domain.model.PrayerTimeItem
+import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.components.PrayerAyahLine
+import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.components.PrayerDateHeader
+import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.components.PrayerTimeRow
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.state.PrayerUiState
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.viewmodel.PrayerViewModel
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
+import java.util.Calendar
 
 @Composable
 fun PrayerRoute(
@@ -99,6 +106,7 @@ fun PrayerRoute(
     )
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun PrayerScreen(
     state: PrayerUiState,
@@ -131,6 +139,27 @@ fun PrayerScreen(
 
     val latestOnUseCurrentLocation by rememberUpdatedState(onUseCurrentLocation)
 
+    fun requestCurrentLocation() {
+        val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (hasPermission) {
+            latestOnUseCurrentLocation()
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ),
+            )
+        }
+    }
+
     Surface(
         modifier = modifier
             .fillMaxSize()
@@ -145,66 +174,15 @@ fun PrayerScreen(
                 state.dashboard == null -> ErrorView(
                     message = state.errorMessage ?: stringResource(R.string.prayer_no_data),
                 )
-                else -> Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(contentPadding)
-                        .padding(horizontal = 18.dp, vertical = 16.dp)
-                        .navigationBarsPadding()
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    PrayerHeader(
-                        location = state.dashboard.location.city,
-                        country = state.dashboard.location.country,
-                        onBack = onBack,
-                        onRefresh = onRefresh,
-                    )
-
-                    AnimatedVisibility(visible = state.errorMessage != null) {
-                        ErrorBanner(
-                            message = state.errorMessage.orEmpty(),
-                            onDismiss = onClearError,
-                        )
-                    }
-
-                    PrayerSummaryCard(
-                        day = state.dashboard.today,
-                        nextPrayerName = state.dashboard.nextPrayerName,
-                        nextPrayerTime = state.dashboard.nextPrayerTime,
-                        remainingText = state.dashboard.remainingText,
-                        countdownOverride = state.prayerCountdownText,
-                    )
-
-                    PrayerTodayRow(
-                        day = state.dashboard.today,
-                    )
-
-                    PrayerActionsRow(
-                        isRefreshing = state.isRefreshing,
-                        onCurrentLocationClick = {
-                            val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
-                                androidx.core.content.ContextCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                            if (hasPermission) {
-                                latestOnUseCurrentLocation()
-                            } else {
-                                locationPermissionLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                                    ),
-                                )
-                            }
-                        },
-                        onChangeLocationClick = onOpenLocationSheet,
-                    )
-                }
+                else -> PrayerContent(
+                    state = state,
+                    contentPadding = contentPadding,
+                    onBack = onBack,
+                    onCurrentLocationClick = ::requestCurrentLocation,
+                    onManualLocationClick = onOpenLocationSheet,
+                    onRefreshClick = onRefresh,
+                    onClearError = onClearError,
+                )
             }
 
             if (state.isLocationSheetVisible) {
@@ -213,26 +191,7 @@ fun PrayerScreen(
                     country = state.manualCountry,
                     onCityChanged = onCityChanged,
                     onCountryChanged = onCountryChanged,
-                    onUseCurrentLocation = {
-                        val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
-                            androidx.core.content.ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                        if (hasPermission) {
-                            onUseCurrentLocation()
-                        } else {
-                            locationPermissionLauncher.launch(
-                                arrayOf(
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                ),
-                            )
-                        }
-                    },
+                    onUseCurrentLocation = ::requestCurrentLocation,
                     onSaveLocation = onSaveLocation,
                     onDismiss = onCloseLocationSheet,
                 )
@@ -259,38 +218,230 @@ private fun PrayerBackground() {
 }
 
 @Composable
-private fun PrayerHeader(
-    location: String,
-    country: String,
+private fun PrayerContent(
+    state: PrayerUiState,
+    contentPadding: PaddingValues,
     onBack: () -> Unit,
-    onRefresh: () -> Unit,
+    onCurrentLocationClick: () -> Unit,
+    onManualLocationClick: () -> Unit,
+    onRefreshClick: () -> Unit,
+    onClearError: () -> Unit,
 ) {
+    val dashboard = state.dashboard ?: return
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+            .padding(horizontal = 18.dp)
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Spacer(modifier = Modifier.height(4.dp))
+
+        PrayerTopBar(
+            location = dashboard.location,
+            isRefreshing = state.isRefreshing,
+            onBack = onBack,
+            onCurrentLocationClick = onCurrentLocationClick,
+            onManualLocationClick = onManualLocationClick,
+            onRefreshClick = onRefreshClick,
+        )
+
+        AnimatedVisibility(visible = state.errorMessage != null) {
+            ErrorBanner(
+                message = state.errorMessage.orEmpty(),
+                onDismiss = onClearError,
+            )
+        }
+
+        PrayerDateHeader(
+            dayName = state.dayName,
+            hijriDate = state.hijriDate,
+            gregorianDate = state.gregorianDate,
+            currentTime = state.currentTime,
+        )
+
+        PrayerAyahLine(ayah = state.currentAyah)
+
+        PrayerTimesSection(day = dashboard.today)
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun PrayerTopBar(
+    location: PrayerLocation,
+    isRefreshing: Boolean,
+    onBack: () -> Unit,
+    onCurrentLocationClick: () -> Unit,
+    onManualLocationClick: () -> Unit,
+    onRefreshClick: () -> Unit,
+) {
+    var showOptionsMenu by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
     ) {
-        IconButton(onClick = onBack) {
-            Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = null)
+        // Glass back button
+        LiquidGlassCard(
+            onClick = onBack,
+            modifier = Modifier.size(44.dp),
+            cornerRadius = 999.dp,
+            refraction = 0.55f,
+            frost = 8f,
+            dispersion = 0.20f,
+            glowAlpha = 0.70f,
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = stringResource(R.string.quran_back),
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // Title + location, centered
+        Column(
+            modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Text(
                 text = stringResource(R.string.prayer_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
+                color = Color.White,
             )
             Text(
-                text = "$location, $country",
+                text = "${location.city}, ${location.country}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.85f),
             )
         }
 
-        IconButton(onClick = onRefresh) {
-            Icon(imageVector = Icons.Outlined.Refresh, contentDescription = null)
+        // Glass options button with floating popup menu
+        Box {
+            LiquidGlassCard(
+                onClick = { showOptionsMenu = !showOptionsMenu },
+                modifier = Modifier.size(44.dp),
+                cornerRadius = 999.dp,
+                refraction = 0.55f,
+                frost = 8f,
+                dispersion = 0.20f,
+                glowAlpha = 0.70f,
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (isRefreshing) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Tune,
+                            contentDescription = stringResource(R.string.prayer_options),
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                }
+            }
+
+            DropdownMenu(
+                expanded = showOptionsMenu,
+                onDismissRequest = { showOptionsMenu = false },
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF0A1628).copy(alpha = 0.96f))
+                    .border(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(16.dp),
+                    )
+                    .width(220.dp),
+            ) {
+                PrayerOptionItem(
+                    label = stringResource(R.string.prayer_use_current_location),
+                    icon = Icons.Rounded.MyLocation,
+                    onClick = {
+                        showOptionsMenu = false
+                        onCurrentLocationClick()
+                    },
+                )
+                OptionDivider()
+                PrayerOptionItem(
+                    label = stringResource(R.string.prayer_change_location),
+                    icon = Icons.Rounded.EditLocationAlt,
+                    onClick = {
+                        showOptionsMenu = false
+                        onManualLocationClick()
+                    },
+                )
+                OptionDivider()
+                PrayerOptionItem(
+                    label = stringResource(R.string.prayer_refresh),
+                    icon = Icons.Rounded.Refresh,
+                    onClick = {
+                        showOptionsMenu = false
+                        onRefreshClick()
+                    },
+                )
+            }
         }
     }
+}
+
+/**
+ * A single selectable row inside the options popup.
+ */
+@Composable
+private fun PrayerOptionItem(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = label,
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.size(20.dp),
+        )
+    }
+}
+
+@Composable
+private fun OptionDivider() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(0.5.dp)
+            .background(Color.White.copy(alpha = 0.10f)),
+    )
 }
 
 @Composable
@@ -325,142 +476,65 @@ private fun ErrorBanner(
 }
 
 @Composable
-private fun PrayerSummaryCard(
-    day: PrayerDay,
-    nextPrayerName: String,
-    nextPrayerTime: String,
-    remainingText: String,
-    countdownOverride: String,
-) {
-    Card(
-        shape = RoundedCornerShape(30.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.13f),
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.prayer_next_prayer),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = nextPrayerName,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = nextPrayerTime,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = countdownOverride.ifBlank { remainingText },
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = day.readableDate,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
+private fun PrayerTimesSection(day: PrayerDay) {
+    val nextIndex = rememberNextPrayerIndex(day)
+    val lastPassedIndex = rememberLastPassedIndex(day)
+    val isFriday = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY
 
-@Composable
-private fun PrayerTodayRow(day: PrayerDay) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(
-            text = stringResource(R.string.prayer_today_times),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            day.prayerTimes.forEach { prayer ->
-                PrayerTimeChip(
-                    item = prayer,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PrayerTimeChip(
-    item: PrayerTimeItem,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = item.time,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
+        day.prayerTimes.forEachIndexed { index, prayer ->
+            PrayerTimeRow(
+                item = prayer,
+                isNext = index == nextIndex,
+                isPast = index <= lastPassedIndex && index != nextIndex,
+                isFriday = isFriday,
             )
         }
     }
 }
 
+/**
+ * Computes the index of the next upcoming prayer based on the current device time.
+ */
 @Composable
-private fun PrayerActionsRow(
-    isRefreshing: Boolean,
-    onCurrentLocationClick: () -> Unit,
-    onChangeLocationClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        AppButton(
-            text = stringResource(R.string.prayer_use_current_location),
-            onClick = onCurrentLocationClick,
-            isLoading = isRefreshing,
-            icon = Icons.Outlined.MyLocation,
-            modifier = Modifier.weight(1f),
-        )
-        OutlinedButton(
-            onClick = onChangeLocationClick,
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.primary,
-            ),
-        ) {
-            Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = stringResource(R.string.prayer_change_location))
+private fun rememberNextPrayerIndex(day: PrayerDay): Int {
+    return androidx.compose.runtime.remember(day) {
+        val now = Calendar.getInstance()
+        val firstUpcoming = day.prayerTimes.indexOfFirst { item ->
+            parseToCalendar(item)?.let { it.after(now) } ?: false
         }
+        if (firstUpcoming >= 0) firstUpcoming else -1
+    }
+}
+
+/**
+ * Computes the index of the most recent prayer that has already passed.
+ */
+@Composable
+private fun rememberLastPassedIndex(day: PrayerDay): Int {
+    return androidx.compose.runtime.remember(day) {
+        val now = Calendar.getInstance()
+        var lastIndex = -1
+        day.prayerTimes.forEachIndexed { index, item ->
+            parseToCalendar(item)?.let { if (!it.after(now)) lastIndex = index }
+        }
+        lastIndex
+    }
+}
+
+private fun parseToCalendar(item: PrayerTimeItem): Calendar? {
+    return try {
+        val cleanTime = item.time.split(" ").firstOrNull().orEmpty()
+        val parts = cleanTime.split(":")
+        if (parts.size != 2) return null
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, parts[0].toInt())
+        calendar.set(Calendar.MINUTE, parts[1].toInt())
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        calendar
+    } catch (_: Exception) {
+        null
     }
 }
 
@@ -475,9 +549,7 @@ private fun PrayerLocationSheet(
     onSaveLocation: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

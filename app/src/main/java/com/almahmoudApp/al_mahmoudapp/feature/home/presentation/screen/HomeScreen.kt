@@ -62,6 +62,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.state.HomeUiStat
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.viewmodel.HomeViewModel
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.domain.model.PrayerDay
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.domain.model.PrayerTimeItem
+import com.almahmoudApp.al_mahmoudapp.core.util.NumberLocalization
 import androidx.compose.ui.graphics.Color
 
 @Composable
@@ -169,11 +170,9 @@ private fun HomeContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(horizontal = 18.dp, vertical = 18.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             HomePrayerPreview(
                 day = state.prayerDashboard?.today,
                 location = state.prayerDashboard?.location?.city.orEmpty(),
@@ -186,16 +185,22 @@ private fun HomeContent(
                 isLoading = state.isPrayerLoading,
                 errorMessage = state.prayerErrorMessage,
             )
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            QuoteTicker(quotes = state.quotes)
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            HomeFeaturePager(
-                features = state.features,
-                onFeatureSelected = onFeatureSelected,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp),
+            ) {
+                QuoteTicker(quotes = state.quotes)
+                Spacer(modifier = Modifier.height(20.dp))
+
+                HomeFeaturePager(
+                    features = state.features,
+                    onFeatureSelected = onFeatureSelected,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -241,11 +246,11 @@ private fun QuoteTicker(
     )
 }
 
-private fun getArabicPrayerName(englishName: String): String {
+private fun getArabicPrayerName(englishName: String, isFriday: Boolean = false): String {
     return when (englishName.lowercase().trim()) {
         "fajr" -> "الفجر"
         "sunrise", "shorouq", "shoorooq" -> "الشروق"
-        "dhuhr" -> "الظهر"
+        "dhuhr" -> if (isFriday) "الجمعة" else "الظهر"
         "asr" -> "العصر"
         "maghrib" -> "المغرب"
         "isha" -> "العشاء"
@@ -264,9 +269,25 @@ private fun HomePrayerPreview(
     isLoading: Boolean,
     errorMessage: String?,
 ) {
+    val gold = Color(0xFFFFD54F)
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val now = java.util.Calendar.getInstance()
+    val isFriday = now.get(java.util.Calendar.DAY_OF_WEEK) == java.util.Calendar.FRIDAY
+    val dayName = remember {
+        val isArabic = NumberLocalization.isArabic()
+        val locale = if (isArabic) {
+            java.util.Locale.Builder().setLanguage("ar").build()
+        } else {
+            java.util.Locale.getDefault()
+        }
+        java.text.SimpleDateFormat("EEEE", locale).format(now.time)
+    }
+
     if (isLoading && day == null) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
@@ -275,7 +296,7 @@ private fun HomePrayerPreview(
             Text(
                 text = stringResource(R.string.loading),
                 modifier = Modifier.padding(16.dp),
-                fontFamily = AmiriFont
+                fontFamily = AmiriFont,
             )
         }
         return
@@ -284,7 +305,9 @@ private fun HomePrayerPreview(
     if (day == null) {
         if (errorMessage != null) {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.55f),
@@ -294,7 +317,7 @@ private fun HomePrayerPreview(
                     text = errorMessage,
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.onErrorContainer,
-                    fontFamily = AmiriFont
+                    fontFamily = AmiriFont,
                 )
             }
         }
@@ -325,7 +348,6 @@ private fun HomePrayerPreview(
         list
     }
 
-    val now = java.util.Calendar.getInstance()
     var currentIndex = -1
     for (i in parsedTimes.indices) {
         val cal = parsedTimes[i].second
@@ -355,145 +377,202 @@ private fun HomePrayerPreview(
         }
     }
 
-    val gold = Color(0xFFFFD54F)
-
-    Card(
+    Box(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF06221A).copy(alpha = 0.90f),
-        ),
     ) {
+        // Full-bleed background image
+        Image(
+            painter = painterResource(id = R.drawable.prayer),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Dark scrim for readability + top accent, fading to the screen background at the bottom
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.45f),
+                            Color.Black.copy(alpha = 0.55f),
+                            Color.Black.copy(alpha = 0.65f),
+                            backgroundColor,
+                        ),
+                    ),
+                ),
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(18.dp),
         ) {
-            // Header Location
-            Text(
-                text = if (country.isBlank()) location else "$location, $country",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = AmiriFont),
-                color = Color.White.copy(alpha = 0.85f),
-                textAlign = TextAlign.Center,
-            )
-            
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Sleek Compact Row showing countdown and localized next prayer
+            // Day name (top-left) + location (top-right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column {
-                    Text(
-                        text = "الصلاة القادمة: ${getArabicPrayerName(nextPrayerName)}",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontFamily = AmiriFont),
-                        color = gold,
-                    )
-                    Text(
-                        text = "المتبقي: $countdown",
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = AmiriFont),
-                        color = Color.White.copy(alpha = 0.7f),
-                    )
-                }
-                
                 Text(
-                    text = nextPrayerTime.split(" ").firstOrNull().orEmpty(),
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold, fontFamily = AmiriFont),
-                    color = Color.White
+                    text = NumberLocalization.localize(dayName),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = AmiriFont,
+                    ),
+                    color = gold,
+                )
+                Text(
+                    text = if (country.isBlank()) location else "$location, $country",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = AmiriFont,
+                    ),
+                    color = Color.White.copy(alpha = 0.9f),
+                    textAlign = TextAlign.End,
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Sleek Rounded Linear Progress Bar
+            // Next prayer countdown
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column {
+                    Text(
+                        text = "الصلاة القادمة: ${getArabicPrayerName(nextPrayerName, isFriday)}",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = AmiriFont,
+                        ),
+                        color = gold,
+                    )
+                    Text(
+                        text = "المتبقي: ${NumberLocalization.localize(countdown)}",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = AmiriFont),
+                        color = Color.White.copy(alpha = 0.85f),
+                    )
+                }
+                Text(
+                    text = NumberLocalization.localize(
+                        nextPrayerTime.split(" ").firstOrNull().orEmpty(),
+                    ),
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = AmiriFont,
+                    ),
+                    color = Color.White,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Rounded Linear Progress Bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(Color.White.copy(alpha = 0.08f))
+                    .background(Color.White.copy(alpha = 0.18f)),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(progressFraction)
                         .fillMaxHeight()
-                        .background(gold)
+                        .background(gold),
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Horizontally Scrollable Row for all prayers
-            androidx.compose.foundation.lazy.LazyRow(
+            // All prayers visible in a single row (no scroll needed for 5 prayers)
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 2.dp)
             ) {
-                items(day.prayerTimes.size) { index ->
-                    val prayer = day.prayerTimes[index]
+                day.prayerTimes.forEachIndexed { index, prayer ->
                     val isPast = index <= currentIndex
                     val isNext = index == nextIndex
-                    
-                    val cardModifier = if (isNext) {
-                        Modifier
-                            .width(80.dp)
-                            .border(
-                                width = 1.5.dp,
-                                color = gold,
-                                shape = RoundedCornerShape(14.dp)
-                            )
-                    } else {
-                        Modifier.width(80.dp)
-                    }
-
-                    Card(
-                        modifier = cardModifier,
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isNext) {
-                                Color(0xFF0F3628)
-                            } else {
-                                Color.White.copy(alpha = 0.06f)
-                            }
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 4.dp)
-                                .graphicsLayer {
-                                    alpha = if (isPast && !isNext) 0.45f else 1.0f
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            Text(
-                                text = getArabicPrayerName(prayer.name),
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontFamily = AmiriFont),
-                                color = if (isNext) gold else Color.White,
-                                textAlign = TextAlign.Center,
-                            )
-                            Text(
-                                text = prayer.time,
-                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = AmiriFont),
-                                color = if (isNext) Color.White else Color.White.copy(alpha = 0.8f),
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
+                    HomePrayerChip(
+                        prayer = prayer,
+                        isNext = isNext,
+                        isPast = isPast,
+                        isFriday = isFriday,
+                        gold = gold,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.height(28.dp))
+        }
+    }
+}
 
+/**
+ * A single compact prayer chip showing its name and time, highlighted when it is the next prayer.
+ */
+@Composable
+private fun HomePrayerChip(
+    prayer: PrayerTimeItem,
+    isNext: Boolean,
+    isPast: Boolean,
+    isFriday: Boolean,
+    gold: Color,
+    modifier: Modifier = Modifier,
+) {
+    val cardModifier = if (isNext) {
+        modifier.border(
+            width = 1.5.dp,
+            color = gold,
+            shape = RoundedCornerShape(14.dp),
+        )
+    } else {
+        modifier
+    }
+
+    Card(
+        modifier = cardModifier,
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isNext) {
+                Color(0xFF0F3628)
+            } else {
+                Color.White.copy(alpha = 0.12f)
+            },
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 4.dp)
+                .graphicsLayer {
+                    alpha = if (isPast && !isNext) 0.5f else 1.0f
+                },
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             Text(
-                text = "يمكنك التمرير لرؤية جميع أوقات الصلاة",
-                style = MaterialTheme.typography.labelSmall.copy(fontFamily = AmiriFont),
-                color = Color.White.copy(alpha = 0.6f),
+                text = getArabicPrayerName(prayer.name, isFriday),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = AmiriFont,
+                ),
+                color = if (isNext) gold else Color.White,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = NumberLocalization.localize(prayer.time.split(" ").firstOrNull().orEmpty()),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = AmiriFont,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = if (isNext) Color.White else Color.White.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center,
             )
         }
     }

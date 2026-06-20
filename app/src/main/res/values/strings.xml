@@ -100,6 +100,10 @@
     <string name="prayer_no_data">No prayer data is available yet.</string>
     <string name="prayer_location_permission_required">Location permission is required to use your current location.</string>
     <string name="prayer_location_required">City and country are required.</string>
+    <string name="prayer_refresh">Refresh</string>
+    <string name="prayer_options">Options</string>
+    <string name="prayer_adhan">Adhan</string>
+    <string name="prayer_iqamah">Iqamah</string>
     <string name="success">Success</string>
     <string name="sucsses_copy">Copied to clipboard</string>
     <string name="quran_change_background">Change background</string>

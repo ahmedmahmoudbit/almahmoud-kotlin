@@ -164,13 +164,28 @@ class PrayerRepositoryImpl @Inject constructor(
         return PrayerDay(
             readableDate = readable,
             prayerTimes = listOf(
-                PrayerTimeItem(PRAYER_FAJR, timings.fajr.orEmpty()),
-                PrayerTimeItem(PRAYER_DHUHR, timings.dhuhr.orEmpty()),
-                PrayerTimeItem(PRAYER_ASR, timings.asr.orEmpty()),
-                PrayerTimeItem(PRAYER_MAGHRIB, timings.maghrib.orEmpty()),
-                PrayerTimeItem(PRAYER_ISHA, timings.isha.orEmpty()),
+                PrayerTimeItem(PRAYER_FAJR, timings.fajr.orEmpty(), iqamahFor(timings.fajr, IQAMAH_FAJR_MINUTES)),
+                PrayerTimeItem(PRAYER_DHUHR, timings.dhuhr.orEmpty(), iqamahFor(timings.dhuhr, IQAMAH_DHUHR_MINUTES)),
+                PrayerTimeItem(PRAYER_ASR, timings.asr.orEmpty(), iqamahFor(timings.asr, IQAMAH_ASR_MINUTES)),
+                PrayerTimeItem(PRAYER_MAGHRIB, timings.maghrib.orEmpty(), iqamahFor(timings.maghrib, IQAMAH_MAGHRIB_MINUTES)),
+                PrayerTimeItem(PRAYER_ISHA, timings.isha.orEmpty(), iqamahFor(timings.isha, IQAMAH_ISHA_MINUTES)),
             ),
         )
+    }
+
+    /** Adds the iqamah offset (in minutes) to an adhan time string ("HH:mm ..."). */
+    private fun iqamahFor(adhanTime: String?, offsetMinutes: Int): String {
+        val cleaned = adhanTime?.split(" ")?.firstOrNull().orEmpty()
+        val parts = cleaned.split(":")
+        if (parts.size != 2) return ""
+        return runCatching {
+            val hour = parts[0].toInt()
+            val minute = parts[1].toInt()
+            val total = hour * 60 + minute + offsetMinutes
+            val newHour = ((total / 60) % 24 + 24) % 24
+            val newMinute = (total % 60 + 60) % 60
+            "%02d:%02d".format(newHour, newMinute)
+        }.getOrDefault("")
     }
 
     private fun chooseMethod(country: String): Int {
@@ -228,6 +243,11 @@ class PrayerRepositoryImpl @Inject constructor(
         const val PRAYER_ISHA = "Isha"
         const val DEFAULT_CITY = "Cairo"
         const val DEFAULT_COUNTRY = "Egypt"
+        const val IQAMAH_FAJR_MINUTES = 25
+        const val IQAMAH_DHUHR_MINUTES = 15
+        const val IQAMAH_ASR_MINUTES = 15
+        const val IQAMAH_MAGHRIB_MINUTES = 10
+        const val IQAMAH_ISHA_MINUTES = 20
     }
 
     private data class NextPrayerSelection(
