@@ -3,6 +3,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,6 +31,8 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.Quran
 import com.example.almahmoud.doaa.DoaaRoute
 import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarListRoute
 import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarDetailsRoute
+import com.almahmoudApp.al_mahmoudapp.feature.tamilat.presentation.screen.TamilatRoute
+import com.almahmoudApp.al_mahmoudapp.feature.images.presentation.screen.ImagesRoute
 import dev.chrisbanes.haze.HazeState
 
 @Composable
@@ -41,6 +47,30 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
+        enterTransition = {
+            fadeIn(animationSpec = tween(200)) + slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(200)
+            )
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(200)) + slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(200)
+            )
+        },
+        popEnterTransition = {
+            fadeIn(animationSpec = tween(200)) + slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(200)
+            )
+        },
+        popExitTransition = {
+            fadeOut(animationSpec = tween(200)) + slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(200)
+            )
+        }
     ) {
         composable(AppDestination.Onboarding.route) {
             OnboardingRoute(
@@ -66,6 +96,8 @@ fun AppNavHost(
                         HomeFeatureKey.PRAYER -> navController.navigate(AppDestination.Prayer.route)
                         HomeFeatureKey.DOAA -> navController.navigate(AppDestination.Doaa.route)
                         HomeFeatureKey.AZKAR -> navController.navigate(AppDestination.AzkarList.route)
+                        HomeFeatureKey.TAMILAT -> navController.navigate(AppDestination.Tamilat.route)
+                        HomeFeatureKey.IMAGES -> navController.navigate(AppDestination.Images.route)
                         else -> Unit
                     }
                 },
@@ -98,6 +130,20 @@ fun AppNavHost(
         }
         composable(AppDestination.Qotof.route) {
             QotofRoute(
+                contentPadding = innerPadding,
+                hazeState = hazeState,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(AppDestination.Tamilat.route) {
+            TamilatRoute(
+                contentPadding = innerPadding,
+                hazeState = hazeState,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(AppDestination.Images.route) {
+            ImagesRoute(
                 contentPadding = innerPadding,
                 hazeState = hazeState,
                 onBack = { navController.popBackStack() },

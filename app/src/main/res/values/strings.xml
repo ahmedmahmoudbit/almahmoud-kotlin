@@ -111,4 +111,7 @@
     <string name="quran_options">Options</string>
     <string name="quran_choose_surah">Choose Surah</string>
     <string name="quran_loop">Repeat automatically</string>
+    <string name="prayer_remaining">Remaining</string>
+    <string name="tamilat_title">Reflections</string>
+    <string name="tamilat_copy_hint">Click below to copy reflection</string>
 </resources>

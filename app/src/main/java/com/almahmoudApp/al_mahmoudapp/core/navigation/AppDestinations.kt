@@ -22,6 +22,8 @@ sealed class AppDestination(val route: String) {
     data object AyatSound : AppDestination("ayat/sound?topicId={topicId}") {
         fun createRoute(topicId: Int): String = "ayat/sound?topicId=$topicId"
     }
+    data object Tamilat : AppDestination("tamilat")
+    data object Images : AppDestination("images")
 
     data object QuranAction : AppDestination("quran/action?surahNumber={surahNumber}&page={page}&name={name}") {
         fun createRoute(surahNumber: Int, page: Int, name: String): String {

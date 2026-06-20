@@ -111,4 +111,7 @@
     <string name="quran_options">الخيارات</string>
     <string name="quran_choose_surah">اختر السورة</string>
     <string name="quran_loop">إعادة المقطع تلقائيًا</string>
+    <string name="prayer_remaining">المتبقي</string>
+    <string name="tamilat_title">تأملات</string>
+    <string name="tamilat_copy_hint">انقر أدناه لنسخ التأمل</string>
 </resources>
