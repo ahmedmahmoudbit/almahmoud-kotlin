@@ -37,6 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,9 +46,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -100,58 +103,62 @@ fun QuranTextScreen(
             .haze(state = hazeState),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            when {
-                state.isLoading -> QuranLoading()
-                state.errorMessage != null -> QuranError(
-                    message = state.errorMessage,
-                    onRetry = viewModel::retry,
-                )
-                state.verses.isEmpty() -> EmptyView()
-                else -> ReadingBody(
-                    contentPadding = contentPadding,
-                    surahNumber = surahNumber,
-                    page = page,
-                    surahName = surahName,
-                    fontSize = fontSize.toFloat(),
-                    verses = state.verses,
-                    selectedVerse = state.selectedVerse,
-                    listState = listState,
-                    controlsVisible = controlsVisible,
-                    onBack = onBack,
-                    onToggleFont = {
-                        val next = fontSize + FONT_STEP
-                        fontSize = if (next > MAX_FONT_SIZE) MIN_FONT_SIZE else next
-                    },
-                    onToggleControls = { controlsVisible = !controlsVisible },
-                    onVerseSelected = { verse ->
-                        controlsVisible = false
-                        viewModel.onVerseSelected(verse)
-                    },
-                )
-            }
-
-            if (state.selectedVerse != null) {
-                ModalBottomSheet(
-                    onDismissRequest = viewModel::dismissVerseDetails,
-                    sheetState = bottomSheetState,
-                ) {
-                    QuranVerseDetailsSheet(
-                        state = state,
-                        activeTabIndex = activeTabIndex,
-                        onTabSelected = { activeTabIndex = it },
+        // Lock the whole reading screen to RTL so Arabic text and layout are never
+        // inverted by the device's default (LTR) layout direction.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    state.isLoading -> QuranLoading()
+                    state.errorMessage != null -> QuranError(
+                        message = state.errorMessage,
+                        onRetry = viewModel::retry,
+                    )
+                    state.verses.isEmpty() -> EmptyView()
+                    else -> ReadingBody(
+                        contentPadding = contentPadding,
+                        surahNumber = surahNumber,
+                        page = page,
+                        surahName = surahName,
+                        fontSize = fontSize.toFloat(),
+                        verses = state.verses,
+                        selectedVerse = state.selectedVerse,
+                        listState = listState,
+                        controlsVisible = controlsVisible,
+                        onBack = onBack,
+                        onToggleFont = {
+                            val next = fontSize + FONT_STEP
+                            fontSize = if (next > MAX_FONT_SIZE) MIN_FONT_SIZE else next
+                        },
+                        onToggleControls = { controlsVisible = !controlsVisible },
+                        onVerseSelected = { verse ->
+                            controlsVisible = false
+                            viewModel.onVerseSelected(verse)
+                        },
                     )
                 }
-            }
 
-            if (!controlsVisible && state.verses.isNotEmpty() && state.selectedVerse == null) {
-                FloatingActionButton(
-                    onClick = { controlsVisible = true },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp),
-                ) {
-                    Icon(imageVector = Icons.Rounded.MoreVert, contentDescription = null)
+                if (state.selectedVerse != null) {
+                    ModalBottomSheet(
+                        onDismissRequest = viewModel::dismissVerseDetails,
+                        sheetState = bottomSheetState,
+                    ) {
+                        QuranVerseDetailsSheet(
+                            state = state,
+                            activeTabIndex = activeTabIndex,
+                            onTabSelected = { activeTabIndex = it },
+                        )
+                    }
+                }
+
+                if (!controlsVisible && state.verses.isNotEmpty() && state.selectedVerse == null) {
+                    FloatingActionButton(
+                        onClick = { controlsVisible = true },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp),
+                    ) {
+                        Icon(imageVector = Icons.Rounded.MoreVert, contentDescription = null)
+                    }
                 }
             }
         }

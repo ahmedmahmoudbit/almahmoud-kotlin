@@ -19,6 +19,14 @@ private fun digitToArabic(digit: Char): Char = when (digit) {
     else -> digit
 }
 
+/**
+ * The ornamental end-of-ayah marker, built from Arabic ornamental parentheses enclosing
+ * the Arabic verse number: U+FD3E (﴾) + number + U+FD3F (﴿). Intended to be rendered in
+ * the `me_quran` font. Example output: ﴾٧﴿
+ */
+fun verseNumberMarker(verseNumber: Int): String =
+    "\uFD3E${verseNumber.toArabicNumerals()}\uFD3F"
+
 /** Strips HTML tags from tafseer/maany payloads so they render as plain text. */
 fun stripHtml(text: String): String =
     HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim()
