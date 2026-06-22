@@ -591,89 +591,72 @@ private fun HomeFeaturePager(
     onFeatureSelected: (HomeFeatureKey) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pages = features.chunked(HOME_PAGE_SIZE)
-    val pagerState = rememberPagerState(pageCount = { pages.size })
-
-    Column(
+    HomeStaggeredGrid(
+        features = features,
+        onFeatureSelected = onFeatureSelected,
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    )
+}
+
+/**
+ * A two-column staggered (masonry) grid. Cards alternate between two heights so the columns never
+ * align, producing the staggered look. Items flow top-to-bottom, distributing evenly between the two
+ * columns.
+ */
+@Composable
+private fun HomeStaggeredGrid(
+    features: List<HomeFeature>,
+    onFeatureSelected: (HomeFeatureKey) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Distribute features across two columns, preserving order.
+    val leftColumn = remember(features) { features.filterIndexed { index, _ -> index % 2 == 0 } }
+    val rightColumn = remember(features) { features.filterIndexed { index, _ -> index % 2 == 1 } }
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        HorizontalPager(
-            state = pagerState,
-            contentPadding = PaddingValues(horizontal = 2.dp),
-            pageSpacing = 18.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(356.dp),
-        ) { pageIndex ->
-            FeaturePage(
-                features = pages[pageIndex],
-                onFeatureSelected = onFeatureSelected,
-            )
-        }
-        Spacer(modifier = Modifier.height(14.dp))
-        HomePagerIndicator(
-            pageCount = pages.size,
-            selectedPage = pagerState.currentPage,
+        StaggeredColumn(
+            features = leftColumn,
+            onFeatureSelected = onFeatureSelected,
+            startIndexEven = true,
+            modifier = Modifier.weight(1f),
+        )
+        StaggeredColumn(
+            features = rightColumn,
+            onFeatureSelected = onFeatureSelected,
+            startIndexEven = false,
+            modifier = Modifier.weight(1f),
         )
     }
 }
 
 @Composable
-private fun FeaturePage(
+private fun StaggeredColumn(
     features: List<HomeFeature>,
     onFeatureSelected: (HomeFeatureKey) -> Unit,
+    startIndexEven: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        features.chunked(HOME_ROW_SIZE).forEach { rowFeatures ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                rowFeatures.forEach { feature ->
-                    HomeFeatureCard(
-                        feature = feature,
-                        onClick = { onFeatureSelected(feature.key) },
-                    )
-                }
-                repeat(HOME_ROW_SIZE - rowFeatures.size) {
-                    Spacer(modifier = Modifier.size(104.dp))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HomePagerIndicator(
-    pageCount: Int,
-    selectedPage: Int,
-    modifier: Modifier = Modifier,
-) {
-    Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        repeat(pageCount) { index ->
-            Text(
-                text = "•",
-                color = if (index == selectedPage) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                },
-                style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center,
+        features.forEachIndexed { index, feature ->
+            // Alternate card heights to create the staggered effect.
+            val isLarge = ((index + if (startIndexEven) 0 else 1) % 3 == 0)
+            val cardModifier = Modifier
+                .fillMaxWidth()
+                .height(if (isLarge) STAGGER_HEIGHT_LARGE else STAGGER_HEIGHT_SMALL)
+            HomeFeatureCard(
+                feature = feature,
+                onClick = { onFeatureSelected(feature.key) },
+                modifier = cardModifier,
             )
         }
     }
 }
 
-private const val HOME_ROW_SIZE = 3
-private const val HOME_PAGE_SIZE = 9
+private val STAGGER_HEIGHT_SMALL = 140.dp
+private val STAGGER_HEIGHT_LARGE = 180.dp

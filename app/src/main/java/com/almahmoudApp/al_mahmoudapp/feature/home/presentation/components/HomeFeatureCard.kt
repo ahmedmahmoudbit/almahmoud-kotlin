@@ -56,6 +56,9 @@ import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
  * Home feature card. When an image resource is provided via [featureImage] for the given key,
  * the card displays that image filling the entire card with a bottom scrim on which the title sits.
  * Otherwise it falls back to the icon-based layout.
+ *
+ * The card no longer enforces a fixed size; pass the desired [modifier] to control dimensions so the
+ * card can participate in a staggered grid.
  */
 @Composable
 fun HomeFeatureCard(
@@ -67,9 +70,7 @@ fun HomeFeatureCard(
 
     LiquidGlassCard(
         onClick = onClick,
-        modifier = modifier
-            .width(104.dp)
-            .height(104.dp),
+        modifier = modifier,
         cornerRadius = 24.dp,
         refraction = 0.55f,
         frost = 8f,
@@ -92,10 +93,11 @@ private fun FeatureImageContent(
     @DrawableRes imageRes: Int,
     feature: HomeFeature,
 ) {
-    // The scrim fades from transparent at the top to the surface color at the bottom so it works in
-    // both light and dark themes.
-    val scrimColor = MaterialTheme.colorScheme.surface
-    val titleColor = MaterialTheme.colorScheme.onSurface
+    // The scrim fades from transparent at the top to the themed overlay color at the bottom so the
+    // title stays readable on both light and dark themes.
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val scrimColor = if (isDark) Color.Black else Color.White
+    val titleColor = if (isDark) Color.White else Color.Black
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -109,13 +111,13 @@ private fun FeatureImageContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
+                .height(72.dp)
                 .align(Alignment.BottomCenter)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            scrimColor.copy(alpha = 0.85f),
+                            scrimColor.copy(alpha = 0.70f),
                             scrimColor,
                         ),
                     ),
@@ -124,8 +126,8 @@ private fun FeatureImageContent(
 
         Text(
             text = stringResource(feature.key.titleRes()),
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.Bold,
                 color = titleColor,
             ),
             maxLines = 1,
@@ -134,7 +136,7 @@ private fun FeatureImageContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 6.dp, vertical = 6.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
         )
     }
 }
@@ -212,11 +214,22 @@ private fun HomeFeatureKey.icon(): ImageVector = when (this) {
 
 /**
  * Returns the drawable resource id for a feature's background image, or null to fall back to the
- * icon. Assign your per-section image resources here (e.g. R.drawable.home_sound).
+ * icon. Cards 1–11 map to the first sections; remaining sections fall back to their icon.
  */
 @DrawableRes
 private fun HomeFeatureKey.featureImage(): Int? = when (this) {
-    // TODO: assign a drawable per section, e.g.:
-    // HomeFeatureKey.SOUND -> R.drawable.home_sound
-    else -> null
+    HomeFeatureKey.SOUND -> R.drawable.card1
+    HomeFeatureKey.AYAT -> R.drawable.card2
+    HomeFeatureKey.IMAGES -> R.drawable.card3
+    HomeFeatureKey.TAMILAT -> R.drawable.card4
+    HomeFeatureKey.QOTOF -> R.drawable.card5
+    HomeFeatureKey.STORIES -> R.drawable.card6
+    HomeFeatureKey.PRAYER -> R.drawable.card7
+    HomeFeatureKey.DOAA -> R.drawable.card8
+    HomeFeatureKey.AZKAR -> R.drawable.card9
+    HomeFeatureKey.TASBEEH -> R.drawable.card10
+    HomeFeatureKey.STATUS -> R.drawable.card11
+    HomeFeatureKey.APPS -> null
+    HomeFeatureKey.SUGGESTIONS -> null
+    HomeFeatureKey.CARDS -> null
 }
