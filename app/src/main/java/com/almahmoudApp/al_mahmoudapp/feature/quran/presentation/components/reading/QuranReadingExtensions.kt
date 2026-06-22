@@ -25,7 +25,8 @@ private fun digitToArabic(digit: Char): Char = when (digit) {
  * the `me_quran` font. Example output: ﴾٧﴿
  */
 fun verseNumberMarker(verseNumber: Int): String =
-    "\uFD3E${verseNumber.toArabicNumerals()}\uFD3F"
+//    "\uFD3E${verseNumber.toArabicNumerals()}\uFD3F"
+    "\uFD3F${verseNumber.toArabicNumerals()}\uFD3E"
 
 /** Strips HTML tags from tafseer/maany payloads so they render as plain text. */
 fun stripHtml(text: String): String =

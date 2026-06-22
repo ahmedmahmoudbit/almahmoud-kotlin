@@ -37,23 +37,24 @@ fun QuranContent(
     ) {
         item(key = "quran_header") {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                // Surah name in the ornamental frame, then the basmala as plain centered
+                // text below it, then the verses flow directly underneath.
                 QuranSurahHeader(
                     surahName = surahName,
-                    page = page,
-                    verseCount = verses.size,
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 if (showBasmala) {
                     QuranBasmala()
                 }
-                QuranMushafText(
-                    verses = verses,
-                    fontSize = fontSize,
-                    selectedVerse = selectedVerse,
-                    onVerseSelected = onVerseSelected,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                )
+//                QuranMushafText(
+//                    verses = verses,
+//                    fontSize = fontSize,
+//                    selectedVerse = selectedVerse,
+//                    onVerseLongClick = onVerseSelected,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(top = 4.dp),
+//                )
             }
         }
     }

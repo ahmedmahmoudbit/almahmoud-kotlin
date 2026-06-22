@@ -27,21 +27,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.almahmoudApp.al_mahmoudapp.R
 
-
+/**
+ * Surah title header: the surah name in an ornamental, bordered, tinted frame
+ * (non-glass) with a book medallion on each side.
+ */
 @Composable
 fun QuranSurahHeader(
     surahName: String,
-    page: Int,
-    verseCount: Int,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         QuranSurahTitleRow(surahName = surahName)
-        QuranSurahMetaRow(page = page, verseCount = verseCount)
     }
 }
 
@@ -85,67 +84,17 @@ private fun QuranSurahTitleRow(surahName: String) {
     }
 }
 
-@Composable
-private fun QuranSurahMetaRow(page: Int, verseCount: Int) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        QuranSurahMetaChip(
-            label = stringResource(R.string.quran_page),
-            value = page.toArabicNumerals(),
-            modifier = Modifier.weight(1f),
-        )
-        QuranSurahMetaChip(
-            label = stringResource(R.string.quran_verses),
-            value = verseCount.toArabicNumerals(),
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-@Composable
-private fun QuranSurahMetaChip(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(14.dp),
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(
-            text = label,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelMedium,
-        )
-        Text(
-            text = value,
-            color = MaterialTheme.colorScheme.primary,
-            fontFamily = AmiriFont,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-        )
-    }
-}
-
-/** The Basmala, centered in an elegant tinted frame (non-glass). */
+/**
+ * The Basmala as plain, centered, elegant Arabic text (no frame) so it reads as the
+ * opening line above the flowing verses.
+ */
 @Composable
 fun QuranBasmala(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.size(4.dp))
+        Spacer(modifier = Modifier.size(2.dp))
         Text(
             text = stringResource(R.string.quran_basmala),
             color = MaterialTheme.colorScheme.onSurface,
@@ -153,11 +102,7 @@ fun QuranBasmala(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 24.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
-                .padding(vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

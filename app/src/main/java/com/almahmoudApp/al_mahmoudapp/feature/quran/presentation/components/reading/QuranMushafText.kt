@@ -15,6 +15,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -23,20 +24,6 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranVerse
 
 private const val VERSE_TAG = "verse"
 
-/**
- * Renders the surah's verses as a single flowing, justified text block — the authentic
- * mushaf reading experience. Verses run continuously into each other side-by-side; an
- * ornamental end-of-ayah marker (U+FD3E number U+FD3F) separates them, rendered in the
- * `me_quran` font with a distinct accent color. Tapping a verse selects it and opens
- * its tafseer/maany details.
- *
- * Layout notes:
- *  - Forced RTL text direction so Arabic never renders inverted.
- *  - The marker uses a distinct accent color to stand out from verse text.
- *  - Verse body font is slightly reduced; the marker number is slightly enlarged.
- *  - A wide no-break gap is placed BEFORE each marker; none after it.
- *  - Line height is generous (1.7x) with no trimming, so verses breathe vertically.
- */
 @Composable
 fun QuranMushafText(
     verses: List<QuranVerse>,
@@ -47,20 +34,18 @@ fun QuranMushafText(
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
     val accentColor = MaterialTheme.colorScheme.primary
-    val markerColor = MaterialTheme.colorScheme.tertiary
     val selectedKey = selectedVerse?.key
 
-    val annotated = remember(verses, fontSize, selectedKey, accentColor, textColor, markerColor) {
+    val annotated = remember(verses, fontSize, selectedKey, accentColor, textColor) {
         buildMushafAnnotated(
             verses = verses,
             fontSize = fontSize,
             selectedKey = selectedKey,
             textColor = textColor,
             accentColor = accentColor,
-            markerColor = markerColor,
+            ayaColor = accentColor,
         )
     }
-
     ClickableText(
         text = annotated,
         style = TextStyle(
@@ -68,13 +53,13 @@ fun QuranMushafText(
             fontFamily = MeQuranFont,
             fontWeight = FontWeight.Normal,
             fontSize = fontSize.sp,
-            // Generous, non-trimmed line height so vertically adjacent verses don't touch.
             lineHeight = (fontSize * 1.7f).sp,
             lineHeightStyle = LineHeightStyle(
                 alignment = LineHeightStyle.Alignment.Center,
                 trim = LineHeightStyle.Trim.None,
             ),
             textDirection = TextDirection.Rtl,
+            textAlign = TextAlign.Center
         ),
         modifier = modifier
             .fillMaxWidth()
@@ -97,17 +82,14 @@ private fun buildMushafAnnotated(
     selectedKey: String?,
     textColor: Color,
     accentColor: Color,
-    markerColor: Color,
+    ayaColor: Color,
 ): AnnotatedString = buildAnnotatedString {
-    // Verse body slightly reduced; marker number slightly enlarged.
-    val verseSize = (fontSize * 0.92f).sp
-    val markerSize = (fontSize * 1.15f).sp
+    val verseSize = (fontSize * 0.90f).sp
+    val markerSize = ((fontSize - 5) * 1f).sp
 
-    verses.forEach { verse ->
+    verses.forEachIndexed { index, verse ->
         val isSelected = verse.key == selectedKey
         val verseColor = if (isSelected) accentColor else textColor
-
-        // Verse body as a tagged, tappable span.
         pushStringAnnotation(tag = VERSE_TAG, annotation = verse.key)
         withStyle(
             SpanStyle(
@@ -117,16 +99,13 @@ private fun buildMushafAnnotated(
                 background = if (isSelected) accentColor.copy(alpha = 0.12f) else Color.Transparent,
             ),
         ) {
+            if (index != 0) append("\u2002")
             append(verse.content)
         }
         pop()
-
-        // Wide no-break gap BEFORE the marker separates it clearly from the verse text;
-        // the marker itself follows in a distinct accent color, then the next verse
-        // starts immediately with no gap after the marker.
         withStyle(
             SpanStyle(
-                color = markerColor,
+                color = ayaColor,
                 fontFamily = MeQuranFont,
                 fontSize = markerSize,
                 fontWeight = FontWeight.Bold,
