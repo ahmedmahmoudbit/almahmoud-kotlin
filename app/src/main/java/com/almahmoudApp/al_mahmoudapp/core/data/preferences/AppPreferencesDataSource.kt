@@ -3,6 +3,7 @@ package com.almahmoudApp.al_mahmoudapp.core.data.preferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.core.edit
 import javax.inject.Inject
@@ -59,9 +60,26 @@ class AppPreferencesDataSource @Inject constructor(
         }
     }
 
+    val quranFontSize: Flow<Int> = dataStore.data
+        .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
+        .map { preferences ->
+            preferences[Keys.QURAN_FONT_SIZE] ?: DEFAULT_FONT_SIZE
+        }
+
+    suspend fun setQuranFontSize(size: Int) {
+        dataStore.edit { preferences ->
+            preferences[Keys.QURAN_FONT_SIZE] = size
+        }
+    }
+
     private object Keys {
         val IS_ONBOARDING_COMPLETED = booleanPreferencesKey("is_onboarding_completed")
         val FAVORITE_ANASHEED = stringSetPreferencesKey("favorite_anasheed")
         val FAVORITE_STORIES = stringSetPreferencesKey("favorite_stories")
+        val QURAN_FONT_SIZE = intPreferencesKey("quran_font_size")
+    }
+
+    companion object {
+        const val DEFAULT_FONT_SIZE = 28
     }
 }

@@ -20,13 +20,16 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranVerse
 @Composable
 fun QuranContent(
     verses: List<QuranVerse>,
+    surahNumber: Int,
     surahName: String,
-    page: Int,
     fontSize: Float,
     showBasmala: Boolean,
     selectedVerse: QuranVerse?,
+    highlightedVerseNumber: Int = -1,
     listState: LazyListState,
     onVerseSelected: (QuranVerse) -> Unit,
+    onTap: () -> Unit,
+    onNextSurahClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -37,8 +40,6 @@ fun QuranContent(
     ) {
         item(key = "quran_header") {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                // Surah name in the ornamental frame, then the basmala as plain centered
-                // text below it, then the verses flow directly underneath.
                 QuranSurahHeader(
                     surahName = surahName,
                     modifier = Modifier.fillMaxWidth(),
@@ -46,15 +47,21 @@ fun QuranContent(
                 if (showBasmala) {
                     QuranBasmala()
                 }
-//                QuranMushafText(
-//                    verses = verses,
-//                    fontSize = fontSize,
-//                    selectedVerse = selectedVerse,
-//                    onVerseLongClick = onVerseSelected,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(top = 4.dp),
-//                )
+                QuranMushafText(
+                    verses = verses,
+                    fontSize = fontSize,
+                    selectedVerse = selectedVerse,
+                    highlightedVerseNumber = highlightedVerseNumber,
+                    onVerseLongClick = onVerseSelected,
+                    onTap = onTap,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                )
+                NextSurahFooter(
+                    currentSurahNumber = surahNumber,
+                    onNextSurahClick = onNextSurahClick,
+                )
             }
         }
     }

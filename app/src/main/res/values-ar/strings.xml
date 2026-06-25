@@ -41,6 +41,15 @@
     <string name="quran_control_direction">اتجاه التمرير</string>
     <string name="quran_auto_scroll">تمرير تلقائي</string>
     <string name="quran_stop_scroll">إيقاف التمرير</string>
+    <string name="quran_scroll_speed">سرعة التمرير</string>
+    <string name="quran_custom_speed">سرعة مخصصة</string>
+    <string name="quran_start_scroll">ابدأ</string>
+    <string name="quran_speed_very_slow">بطيء جداً</string>
+    <string name="quran_speed_slow">بطيء</string>
+    <string name="quran_speed_medium">متوسط</string>
+    <string name="quran_speed_fast">سريع</string>
+    <string name="quran_speed_very_fast">سريع جداً</string>
+    <string name="quran_next_surah">السورة التالية</string>
     <string name="quran_scroll_vertical">للأسفل</string>
     <string name="quran_scroll_horizontal">لليمين</string>
     <string name="quran_speed_value">السرعة: %1$.2f</string>

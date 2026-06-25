@@ -31,7 +31,7 @@
     <string name="quran_reading">Reading</string>
     <string name="quran_audio">Audio</string>
     <string name="quran_choose_reader">Choose a reciter</string>
-    <string name="quran_basmala">In the name of Allah, the Most Gracious, the Most Merciful</string>
+    <string name="quran_basmala">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</string>
     <string name="quran_verses_count">%1$d verses</string>
     <string name="quran_page_with_number">Page %1$d</string>
     <string name="quran_controls">Controls</string>
@@ -41,6 +41,15 @@
     <string name="quran_control_direction">Scroll direction</string>
     <string name="quran_auto_scroll">Auto scroll</string>
     <string name="quran_stop_scroll">Stop scroll</string>
+    <string name="quran_scroll_speed">Scroll Speed</string>
+    <string name="quran_custom_speed">Custom Speed</string>
+    <string name="quran_start_scroll">Start</string>
+    <string name="quran_speed_very_slow">Very Slow</string>
+    <string name="quran_speed_slow">Slow</string>
+    <string name="quran_speed_medium">Medium</string>
+    <string name="quran_speed_fast">Fast</string>
+    <string name="quran_speed_very_fast">Very Fast</string>
+    <string name="quran_next_surah">Next Surah</string>
     <string name="quran_scroll_vertical">Down</string>
     <string name="quran_scroll_horizontal">Right</string>
     <string name="quran_speed_value">Speed: %1$.2f</string>

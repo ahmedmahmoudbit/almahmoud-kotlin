@@ -3,6 +3,7 @@ package com.almahmoudApp.al_mahmoudapp.core.navigation
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -10,7 +11,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.almahmoudApp.al_mahmoudapp.core.ui.components.GlassmorphicBottomBar
+import com.almahmoudApp.al_mahmoudapp.core.ui.components.AppBottomBar
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
 import dev.chrisbanes.haze.HazeState
 
@@ -33,11 +34,11 @@ fun App(
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
-        val showBottomBar = currentRoute in listOf(
-            AppDestination.Home.route,
-            AppDestination.Quran.route,
-            AppDestination.Settings.route
-        )
+        val showBottomBar by remember(currentRoute) {
+            derivedStateOf {
+                currentRoute in BOTTOM_BAR_ROUTES
+            }
+        }
 
         val hazeState = remember { HazeState() }
 
@@ -45,19 +46,33 @@ fun App(
             modifier = Modifier.fillMaxSize(),
             bottomBar = {
                 if (showBottomBar) {
-                    GlassmorphicBottomBar(
-                        navController = navController,
-                        hazeState = hazeState
+                    AppBottomBar(
+                        currentRoute = currentRoute.orEmpty(),
+                        onNavigate = { route ->
+                            if (currentRoute != route) {
+                                navController.navigate(route) {
+                                    popUpTo(AppDestination.Home.route) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        },
                     )
                 }
-            }
+            },
         ) { innerPadding ->
             AppNavHost(
                 innerPadding = innerPadding,
                 startDestination = startDestination,
                 navController = navController,
-                hazeState = hazeState
+                hazeState = hazeState,
             )
         }
     }
 }
+
+private val BOTTOM_BAR_ROUTES = setOf(
+    AppDestination.Home.route,
+    AppDestination.Quran.route,
+    AppDestination.Settings.route,
+)

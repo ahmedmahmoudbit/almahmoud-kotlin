@@ -403,9 +403,6 @@ private fun PrayerTopBar(
     }
 }
 
-/**
- * A single selectable row inside the options popup.
- */
 @Composable
 private fun PrayerOptionItem(
     label: String,

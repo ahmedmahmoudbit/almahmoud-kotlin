@@ -155,17 +155,8 @@ private fun HomeContent(
     onFeatureSelected: (HomeFeatureKey) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LiquidHost(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         HomeBackground()
-        Image(
-            painter = painterResource(id = R.drawable.b7),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .liquidSource()
-                .alpha(0.4f),
-        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -206,17 +197,25 @@ private fun HomeContent(
 
 @Composable
 private fun HomeBackground() {
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .liquidSource()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                        MaterialTheme.colorScheme.background,
-                    ),
+                    colors = if (isDark) {
+                        listOf(
+                            Color(0xFF0A0A0A),
+                            Color(0xFF121212),
+                            Color(0xFF0A0A0A),
+                        )
+                    } else {
+                        listOf(
+                            Color(0xFFFFFFFF),
+                            Color(0xFFF5F5F5),
+                            Color(0xFFFFFFFF),
+                        )
+                    },
                 ),
             ),
     )

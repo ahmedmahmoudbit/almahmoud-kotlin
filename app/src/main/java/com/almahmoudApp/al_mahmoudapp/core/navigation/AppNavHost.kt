@@ -1,38 +1,40 @@
 package com.almahmoudApp.al_mahmoudapp.core.navigation
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
+
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.navigation.NavType
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatRoute
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatSoundRoute
+import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarDetailsRoute
+import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarListRoute
+import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.screen.HomeRoute
-import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen.PrayerRoute
+import com.almahmoudApp.al_mahmoudapp.feature.images.presentation.screen.ImagesRoute
 import com.almahmoudApp.al_mahmoudapp.feature.onboarding.presentation.screen.OnboardingRoute
+import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen.PrayerRoute
+import com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen.QotofRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranActionRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranAudioRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranReadersRoute
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranTextScreen
-import com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen.QotofRoute
-import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoryDetailsRoute
-import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoriesRoute
 import com.almahmoudApp.al_mahmoudapp.feature.settings.presentation.screen.SettingsRoute
-import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
-import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.QuranRoute
-import com.example.almahmoud.doaa.DoaaRoute
-import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarListRoute
-import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarDetailsRoute
+import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoriesRoute
+import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.screen.StoryDetailsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.tamilat.presentation.screen.TamilatRoute
-import com.almahmoudApp.al_mahmoudapp.feature.images.presentation.screen.ImagesRoute
+import com.example.almahmoud.doaa.DoaaRoute
 import dev.chrisbanes.haze.HazeState
 
 @Composable
@@ -41,45 +43,43 @@ fun AppNavHost(
     startDestination: String,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    hazeState: HazeState = remember { HazeState() }
+    hazeState: HazeState = remember { HazeState() },
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         enterTransition = {
             fadeIn(animationSpec = tween(200)) + slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Start,
-                animationSpec = tween(200)
+                animationSpec = tween(200),
             )
         },
         exitTransition = {
             fadeOut(animationSpec = tween(200)) + slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Start,
-                animationSpec = tween(200)
+                animationSpec = tween(200),
             )
         },
         popEnterTransition = {
             fadeIn(animationSpec = tween(200)) + slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.End,
-                animationSpec = tween(200)
+                animationSpec = tween(200),
             )
         },
         popExitTransition = {
             fadeOut(animationSpec = tween(200)) + slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.End,
-                animationSpec = tween(200)
+                animationSpec = tween(200),
             )
-        }
+        },
     ) {
         composable(AppDestination.Onboarding.route) {
             OnboardingRoute(
                 contentPadding = innerPadding,
                 onCompleted = {
                     navController.navigate(AppDestination.Home.route) {
-                        popUpTo(AppDestination.Onboarding.route) {
-                            inclusive = true
-                        }
+                        popUpTo(AppDestination.Onboarding.route) { inclusive = true }
                     }
                 },
             )
@@ -193,12 +193,21 @@ fun AppNavHost(
             QuranRoute(
                 contentPadding = innerPadding,
                 hazeState = hazeState,
-                onSurahSelected = { surah ->
+                onNavigateToText = { surahNumber, page, name ->
                     navController.navigate(
-                        AppDestination.QuranAction.createRoute(
-                            surahNumber = surah.number,
-                            page = surah.pageNumber,
-                            name = surah.nameArabic,
+                        AppDestination.QuranText.createRoute(
+                            surahNumber = surahNumber,
+                            page = page,
+                            name = name,
+                        )
+                    )
+                },
+                onNavigateToAudio = { surahNumber, page, name ->
+                    navController.navigate(
+                        AppDestination.QuranReaders.createRoute(
+                            surahNumber = surahNumber,
+                            page = page,
+                            name = name,
                         )
                     )
                 },
@@ -281,6 +290,15 @@ fun AppNavHost(
                 page = backStackEntry.arguments?.getInt("page") ?: 1,
                 surahName = backStackEntry.arguments?.getString("name").orEmpty(),
                 onBack = { navController.popBackStack() },
+                onNavigateToNextSurah = { nextSurahNumber, nextPage, nextName ->
+                    navController.navigate(
+                        AppDestination.QuranText.createRoute(
+                            surahNumber = nextSurahNumber,
+                            page = nextPage,
+                            name = nextName,
+                        )
+                    )
+                },
             )
         }
         composable(
@@ -305,7 +323,7 @@ fun AppNavHost(
         composable(AppDestination.Settings.route) {
             SettingsRoute(
                 contentPadding = innerPadding,
-                hazeState = hazeState
+                hazeState = hazeState,
             )
         }
     }

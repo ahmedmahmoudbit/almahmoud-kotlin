@@ -4,22 +4,23 @@ import AmiriFont
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoStories
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,66 +28,136 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.almahmoudApp.al_mahmoudapp.R
 
-/**
- * Surah title header: the surah name in an ornamental, bordered, tinted frame
- * (non-glass) with a book medallion on each side.
- */
 @Composable
 fun QuranSurahHeader(
     surahName: String,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        QuranSurahTitleRow(surahName = surahName)
-    }
-}
+    val primaryColor = MaterialTheme.colorScheme.primary
 
-@Composable
-private fun QuranSurahTitleRow(surahName: String) {
-    Row(
-        modifier = Modifier
+    Box(
+        modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
-            .border(
-                width = 1.2.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                shape = RoundedCornerShape(22.dp),
-            )
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = Icons.Rounded.AutoStories,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(22.dp),
-        )
-        Text(
-            text = surahName,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontFamily = AmiriFont,
-            fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1f),
-        )
-        Icon(
-            imageVector = Icons.Rounded.AutoStories,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(22.dp),
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            primaryColor.copy(alpha = 0.08f),
+                            primaryColor.copy(alpha = 0.04f),
+                        )
+                    )
+                )
+                .border(
+                    width = 1.5.dp,
+                    color = primaryColor.copy(alpha = 0.25f),
+                    shape = RoundedCornerShape(24.dp),
+                )
+                .padding(horizontal = 20.dp, vertical = 10.dp),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(1.dp)
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        primaryColor.copy(alpha = 0.4f),
+                                    )
+                                )
+                            )
+                    )
+                    Text(
+                        text = "◆",
+                        color = primaryColor,
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(1.dp)
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        primaryColor.copy(alpha = 0.4f),
+                                        Color.Transparent,
+                                    )
+                                )
+                            )
+                    )
+                }
+                
+                Text(
+                    text = surahName,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = AmiriFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 30.sp,
+                    textAlign = TextAlign.Center,
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(1.dp)
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        primaryColor.copy(alpha = 0.4f),
+                                    )
+                                )
+                            )
+                    )
+                    Text(
+                        text = "◆",
+                        color = primaryColor,
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(1.dp)
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        primaryColor.copy(alpha = 0.4f),
+                                        Color.Transparent,
+                                    )
+                                )
+                            )
+                    )
+                }
+            }
+        }
     }
 }
 
 /**
- * The Basmala as plain, centered, elegant Arabic text (no frame) so it reads as the
- * opening line above the flowing verses.
+ * The Basmala as plain, centered, elegant Arabic text
  */
 @Composable
 fun QuranBasmala(modifier: Modifier = Modifier) {

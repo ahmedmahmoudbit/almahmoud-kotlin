@@ -7,6 +7,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranMode
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranReader
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranSurah
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.usecase.GetQuranContentUseCase
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.FilterType
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.state.QuranUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -31,7 +32,7 @@ class QuranViewModel @Inject constructor(
         _state.update { current ->
             current.copy(
                 query = query,
-                filteredSurahs = filterSurahs(current.content, query),
+                filteredSurahs = filterSurahsByType(current.content, current.selectedFilter, query),
                 filteredReaders = filterReaders(current.content, query),
                 errorMessage = null,
             )
@@ -44,8 +45,35 @@ class QuranViewModel @Inject constructor(
         }
     }
 
+    fun onFilterChange(filter: FilterType) {
+        _state.update { current ->
+            current.copy(
+                selectedFilter = filter,
+                filteredSurahs = filterSurahsByType(current.content, filter, current.query)
+            )
+        }
+    }
+
     fun retry() {
         loadQuranContent()
+    }
+
+    fun toggleFavorite(surahNumber: Int) {
+        _state.update { current ->
+            val updatedContent = current.content?.copy(
+                surahs = current.content.surahs.map { surah ->
+                    if (surah.number == surahNumber) {
+                        surah.copy(isFavorite = !surah.isFavorite)
+                    } else {
+                        surah
+                    }
+                }
+            )
+            current.copy(
+                content = updatedContent,
+                filteredSurahs = filterSurahsByType(updatedContent, current.selectedFilter, current.query),
+            )
+        }
     }
 
     private fun loadQuranContent() {
@@ -82,6 +110,36 @@ class QuranViewModel @Inject constructor(
 
         val normalizedQuery = query.trim()
         return surahs.filter { surah ->
+            surah.nameArabic.contains(normalizedQuery, ignoreCase = true) ||
+                surah.nameEnglish.contains(normalizedQuery, ignoreCase = true) ||
+                surah.revelationType.contains(normalizedQuery, ignoreCase = true) ||
+                surah.versesCount.toString().contains(normalizedQuery) ||
+                surah.pageNumber.toString().contains(normalizedQuery)
+        }
+    }
+
+    private fun filterSurahsByType(content: QuranContent?, filter: FilterType, query: String): List<QuranSurah> {
+        val surahs = content?.surahs.orEmpty()
+        
+        val filteredByType = when (filter) {
+            FilterType.ALL -> surahs
+            FilterType.MAKKAH -> surahs.filter {
+                it.revelationType.contains("مك", ignoreCase = true) ||
+                    it.revelationType.contains("mak", ignoreCase = true)
+            }
+            FilterType.MADINAH -> surahs.filter {
+                it.revelationType.contains("مدن", ignoreCase = true) ||
+                    it.revelationType.contains("med", ignoreCase = true)
+            }
+            FilterType.FAVORITES -> surahs.filter { it.isFavorite }
+        }
+        
+        if (query.isBlank()) {
+            return filteredByType
+        }
+
+        val normalizedQuery = query.trim()
+        return filteredByType.filter { surah ->
             surah.nameArabic.contains(normalizedQuery, ignoreCase = true) ||
                 surah.nameEnglish.contains(normalizedQuery, ignoreCase = true) ||
                 surah.revelationType.contains(normalizedQuery, ignoreCase = true) ||

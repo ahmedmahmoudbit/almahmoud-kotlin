@@ -12,3 +12,5 @@ val AmiriFont = FontFamily(
 val MeQuranFont = FontFamily(
     Font(R.font.me_quran, weight = FontWeight.Normal),
 )
+
+/** QFC Surah name font - displays surah name using SurahGlyphs. */

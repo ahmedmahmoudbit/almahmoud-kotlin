@@ -10,4 +10,5 @@ data class QuranSurah(
     val versesCount: Int,
     val revelationType: String,
     val pageNumber: Int,
+    val isFavorite: Boolean = false,
 )

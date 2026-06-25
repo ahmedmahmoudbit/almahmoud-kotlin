@@ -1,14 +1,10 @@
-package com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel
+package com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen
 
-import LiquidGlassCard
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,16 +15,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -36,51 +31,60 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.rounded.AudioFile
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.TextSnippet
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
-import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
-import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.liquidSource
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranSurah
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.state.QuranUiState
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.QuranViewModel
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+enum class FilterType {
+    ALL, MAKKAH, MADINAH, FAVORITES
+}
 
 @Composable
 fun QuranRoute(
@@ -88,278 +92,178 @@ fun QuranRoute(
     hazeState: HazeState,
     modifier: Modifier = Modifier,
     viewModel: QuranViewModel = hiltViewModel(),
-    onSurahSelected: (QuranSurah) -> Unit = {},
+    onNavigateToText: (Int, Int, String) -> Unit = { _, _, _ -> },
+    onNavigateToAudio: (Int, Int, String) -> Unit = { _, _, _ -> },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     QuranScreen(
         state = state,
         contentPadding = contentPadding,
-        hazeState = hazeState,
         modifier = modifier,
         onQueryChange = viewModel::onQueryChange,
-        onSurahSelected = onSurahSelected,
-        onRetry = viewModel::retry,
+        onFilterChange = viewModel::onFilterChange,
+        onToggleFavorite = viewModel::toggleFavorite,
+        onNavigateToText = onNavigateToText,
+        onNavigateToAudio = onNavigateToAudio,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuranScreen(
     state: QuranUiState,
     contentPadding: PaddingValues,
-    hazeState: HazeState,
     modifier: Modifier = Modifier,
     onQueryChange: (String) -> Unit,
-    onSurahSelected: (QuranSurah) -> Unit,
-    onRetry: () -> Unit = {},
+    onFilterChange: (FilterType) -> Unit,
+    onToggleFavorite: (Int) -> Unit,
+    onNavigateToText: (Int, Int, String) -> Unit,
+    onNavigateToAudio: (Int, Int, String) -> Unit,
 ) {
-    Surface(
-        modifier = modifier
-            .fillMaxSize()
-            .haze(state = hazeState),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        when {
-            state.isLoading            -> LoadingView()
-            state.errorMessage != null -> ErrorView(message = state.errorMessage)
-            else                       -> QuranContent(
-                state = state,
-                contentPadding = contentPadding,
-                onQueryChange = onQueryChange,
-                onSurahSelected = onSurahSelected,
-            )
-        }
-    }
-}
+    var selectedSurah by remember { mutableStateOf<QuranSurah?>(null) }
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-// ─────────────────────────────────────────────
-// Content — الشبكة تتحكم بالسكرول الكامل
-// ─────────────────────────────────────────────
-@Composable
-private fun QuranContent(
-    state: QuranUiState,
-    contentPadding: PaddingValues,
-    onQueryChange: (String) -> Unit,
-    onSurahSelected: (QuranSurah) -> Unit,
-) {
-    val revelationFilter = remember { mutableStateOf("all") }
-    val gridState = rememberLazyGridState()
-
-    val isScrolled by remember {
-        derivedStateOf { gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 40 }
-    }
-    val headerAlpha by animateFloatAsState(
-        targetValue = if (isScrolled) 0f else 1f,
-        animationSpec = tween(300),
-        label = "header_alpha",
-    )
-    val headerHeight by animateFloatAsState(
-        targetValue = if (isScrolled) 0f else 1f,
-        animationSpec = tween(350),
-        label = "header_height",
+    val tabs = listOf(
+        FilterType.ALL to "الكل",
+        FilterType.MAKKAH to "مكية",
+        FilterType.MADINAH to "مدنية",
+        FilterType.FAVORITES to "المفضلة",
     )
 
-    val displayedSurahs = remember(state.filteredSurahs, revelationFilter.value) {
-        when (revelationFilter.value) {
-            "makki"  -> state.filteredSurahs.filter {
-                it.revelationType.contains("mak", ignoreCase = true) ||
-                        it.revelationType.contains("مك", ignoreCase = true)
-            }
-            "madani" -> state.filteredSurahs.filter {
-                it.revelationType.contains("mad", ignoreCase = true) ||
-                        it.revelationType.contains("مد", ignoreCase = true)
-            }
-            else     -> state.filteredSurahs
-        }
-    }
-
-    LiquidHost(modifier = Modifier.fillMaxSize()) {
-        QuranBackground()
-        Image(
-            painter = painterResource(id = R.drawable.b7),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .liquidSource()
-                .alpha(0.4f),
-        )
-        LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Fixed(2),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(
-                start = 14.dp,
-                end = 14.dp,
-                top = 8.dp,
-                bottom = contentPadding.calculateBottomPadding() + 12.dp,
-            ),
-            modifier = Modifier
+    // RTL layout
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        Column(
+            modifier = modifier
                 .fillMaxSize()
                 .padding(top = contentPadding.calculateTopPadding()),
         ) {
+            // Header
+            QuranHeader()
 
-            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .graphicsLayer {
-                            alpha = headerAlpha
-                            scaleY = 0.8f + headerHeight * 0.2f
+            // Search bar
+            QuranSearchBar(
+                query = state.query,
+                onQueryChange = onQueryChange,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+
+            // Tab row
+            val selectedTabIndex = tabs.indexOfFirst { it.first == state.selectedFilter }.coerceAtLeast(0)
+
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.primary,
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                },
+            ) {
+                tabs.forEachIndexed { index, (type, label) ->
+                    val isActive = selectedTabIndex == index
+
+                    Tab(
+                        selected = isActive,
+                        onClick = { onFilterChange(type) },
+                        text = {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                                ),
+                            )
                         },
-                ) {
-                    QuranHeader()
-                    Spacer(Modifier.height(14.dp))
+                    )
                 }
             }
 
-            // ── شريط البحث ──
-            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
-                Column {
-                    QuranSearchBar(
-                        query = state.query,
-                        onQueryChange = onQueryChange,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    QuranRevelationTabs(
-                        selected = revelationFilter.value,
-                        onSelect = { revelationFilter.value = it },
-                    )
-                    Spacer(Modifier.height(10.dp))
-                }
-            }
+            // Surah list
+            val filteredSurahs = state.filteredSurahs
 
-            // ── السور ──
-            if (displayedSurahs.isEmpty()) {
-                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
-                    EmptyView()
-                }
+            if (filteredSurahs.isEmpty()) {
+                EmptyView()
             } else {
-                itemsIndexed(
-                    items = displayedSurahs,
-                    key = { _, surah -> surah.number },
-                ) { index, surah ->
-                    QuranSurahCard(
-                        surah = surah,
-                        index = index,
-                        onClick = { onSurahSelected(surah) },
-                    )
-                }
+                SurahList(
+                    surahs = filteredSurahs,
+                    contentPadding = contentPadding,
+                    onSurahClick = { selectedSurah = it },
+                    onToggleFavorite = onToggleFavorite,
+                )
             }
         }
     }
-}
 
-// ─────────────────────────────────────────────
-// Background
-// ─────────────────────────────────────────────
-@Composable
-private fun QuranBackground() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .liquidSource()
-            .background(MaterialTheme.colorScheme.background),
-    )
-    val stars = remember {
-        (1..55).map {
-            Triple(
-                kotlin.random.Random.nextFloat(),
-                kotlin.random.Random.nextFloat() * 0.60f,
-                kotlin.random.Random.nextFloat() * 0.40f + 0.08f,
+    // Bottom sheet for choosing mode
+    if (selectedSurah != null) {
+        ModalBottomSheet(
+            onDismissRequest = { selectedSurah = null },
+            sheetState = bottomSheetState,
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        ) {
+            SurahModeBottomSheet(
+                surah = selectedSurah!!,
+                onTextClick = {
+                    val surah = selectedSurah!!
+                    onNavigateToText(surah.number, surah.pageNumber, surah.nameArabic)
+                    selectedSurah = null
+                },
+                onAudioClick = {
+                    val surah = selectedSurah!!
+                    onNavigateToAudio(surah.number, surah.pageNumber, surah.nameArabic)
+                    selectedSurah = null
+                },
             )
         }
     }
-    Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxSize()
-            .liquidSource(),
-    ) {
-        stars.forEach { (x, y, a) ->
-            drawCircle(
-                color = Color.White.copy(alpha = a),
-                radius = 0.6.dp.toPx() + kotlin.random.Random.nextFloat() * 0.8.dp.toPx(),
-                center = Offset(size.width * x, size.height * y * 0.55f),
-            )
-        }
-    }
-    AsyncImage(
-        model = R.drawable.home_mosque_skyline,
-        contentDescription = null,
-        contentScale = ContentScale.FillWidth,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(110.dp)
-            .liquidSource()
-            .alpha(0.12f),
-    )
 }
 
-// ─────────────────────────────────────────────
-// Header
-// ─────────────────────────────────────────────
 @Composable
 private fun QuranHeader() {
-    val gold    = Color(0xFFFFD54F)
-    val goldDim = Color(0xFFFFB300)
+    val primaryColor = MaterialTheme.colorScheme.primary
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 10.dp),
+            .padding(top = 8.dp, bottom = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(contentAlignment = Alignment.Center) {
             Box(
                 modifier = Modifier
-                    .size(62.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(goldDim.copy(alpha = 0.18f), Color.Transparent)
-                        )
-                    ),
-            )
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(goldDim.copy(alpha = 0.12f))
-                    .border(0.5.dp, goldDim.copy(alpha = 0.28f), CircleShape),
+                    .background(primaryColor.copy(alpha = 0.1f))
+                    .border(1.dp, primaryColor.copy(alpha = 0.2f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.MenuBook,
                     contentDescription = null,
-                    tint = gold,
-                    modifier = Modifier.size(22.dp),
+                    tint = primaryColor,
+                    modifier = Modifier.size(24.dp),
                 )
             }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
             text = stringResource(R.string.quran_title),
-            style = MaterialTheme.typography.headlineSmall.copy(
+            style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 0.3.sp,
             ),
-            color = gold,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(3.dp))
         Text(
             text = stringResource(R.string.quran_subtitle),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.50f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             textAlign = TextAlign.Center,
         )
     }
 }
 
-// ─────────────────────────────────────────────
-// Search Bar
-// ─────────────────────────────────────────────
 @Composable
 private fun QuranSearchBar(
     query: String,
@@ -367,316 +271,359 @@ private fun QuranSearchBar(
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
-    val gold    = Color(0xFFFFB300)
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
     val hasText = query.isNotEmpty()
 
-    val borderAlpha by animateFloatAsState(
-        targetValue = if (hasText) 0.45f else 0.12f,
-        animationSpec = tween(300),
-        label = "border_alpha",
-    )
-
-    LiquidGlassCard(
-        onClick = {},
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp),
-        cornerRadius = 14.dp,
-        frost = 10f,
-        glowAlpha = if (hasText) 0.50f else 0.28f,
-        refraction = 0.4f,
-        dispersion = 0.2f,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .border(0.5.dp, gold.copy(alpha = borderAlpha), RoundedCornerShape(14.dp)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                contentDescription = null,
-                tint = if (hasText) gold.copy(alpha = 0.8f)
-                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
-                modifier = Modifier.padding(start = 12.dp).size(16.dp),
-            )
-
-            BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.End,
-                ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-                decorationBox = { inner ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = if (hasText) 0.dp else 12.dp),
-                        contentAlignment = Alignment.CenterEnd,
-                    ) {
-                        if (!hasText) {
-                            Text(
-                                text = stringResource(R.string.quran_search_surah),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.30f),
-                            )
-                        }
-                        inner()
-                    }
-                },
-                modifier = Modifier.weight(1f),
-            )
-
-            AnimatedVisibility(
-                visible = hasText,
-                enter = fadeIn(tween(180)),
-            ) {
-                IconButton(
-                    onClick = { onQueryChange(""); focusManager.clearFocus() },
-                    modifier = Modifier
-                        .padding(end = 6.dp)
-                        .size(26.dp)
-                        .clip(CircleShape)
-                        .background(gold.copy(alpha = 0.14f)),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = null,
-                        tint = gold.copy(alpha = 0.85f),
-                        modifier = Modifier.size(12.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────
-// Revelation Tabs
-// ─────────────────────────────────────────────
-@Composable
-private fun QuranRevelationTabs(
-    selected: String,
-    onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val tabs = listOf("all" to "الكل", "makki" to "مكية", "madani" to "مدنية")
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
+            .height(44.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(surfaceVariantColor.copy(alpha = 0.5f))
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        tabs.forEach { (key, label) ->
-            val isActive  = selected == key
-            val tabColor  = when (key) {
-                "makki"  -> Color(0xFFFF8A00)
-                "madani" -> Color(0xFF00BCD4)
-                else     -> Color(0xFFFFB300)
-            }
-            val bgAlpha by animateFloatAsState(
-                targetValue = if (isActive) 0.15f else 0f,
-                animationSpec = tween(220),
-                label = "tab_$key",
-            )
+        Icon(
+            imageVector = Icons.Rounded.Search,
+            contentDescription = null,
+            tint = primaryColor.copy(alpha = 0.5f),
+            modifier = Modifier.size(20.dp),
+        )
 
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(32.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(tabColor.copy(alpha = bgAlpha))
-                    .border(
-                        0.5.dp,
-                        tabColor.copy(alpha = if (isActive) 0.30f else 0.10f),
-                        RoundedCornerShape(10.dp),
-                    )
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) { onSelect(key) },
-                contentAlignment = Alignment.Center,
+        BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+            ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+            decorationBox = { inner ->
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    if (!hasText) {
+                        Text(
+                            text = stringResource(R.string.quran_search_surah),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        )
+                    }
+                    inner()
+                }
+            },
+            modifier = Modifier.weight(1f),
+        )
+
+        AnimatedVisibility(
+            visible = hasText,
+            enter = fadeIn(tween(180)),
+        ) {
+            IconButton(
+                onClick = { onQueryChange(""); focusManager.clearFocus() },
+                modifier = Modifier.size(28.dp),
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 11.sp,
-                    ),
-                    color = if (isActive) tabColor
-                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.42f),
+                Icon(
+                    imageVector = Icons.Rounded.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }
     }
 }
 
-// ─────────────────────────────────────────────
-// Surah Card — أصغر + انيميشن مُصلح
-// ─────────────────────────────────────────────
 @Composable
-private fun QuranSurahCard(
+private fun SurahList(
+    surahs: List<QuranSurah>,
+    contentPadding: PaddingValues,
+    onSurahClick: (QuranSurah) -> Unit,
+    onToggleFavorite: (Int) -> Unit,
+) {
+    val listState = rememberLazyListState()
+
+    LazyColumn(
+        state = listState,
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 8.dp,
+            bottom = contentPadding.calculateBottomPadding() + 16.dp,
+        ),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        itemsIndexed(
+            items = surahs,
+            key = { _, surah -> surah.number },
+        ) { index, surah ->
+            QuranSurahListItem(
+                surah = surah,
+                index = index,
+                onClick = { onSurahClick(surah) },
+                onToggleFavorite = { onToggleFavorite(surah.number) },
+            )
+            if (index < surahs.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.08f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuranSurahListItem(
     surah: QuranSurah,
     index: Int,
     onClick: () -> Unit,
+    onToggleFavorite: () -> Unit,
 ) {
-    val animScale  = remember { Animatable(0.88f) }
-    val animAlpha  = remember { Animatable(0f) }
-    val animOffset = remember { Animatable(18f) }
+    val animAlpha = remember { Animatable(0f) }
+    val animOffset = remember { Animatable(12f) }
 
     LaunchedEffect(surah.number) {
-        val delayMs = (index.coerceAtMost(12) * 28L)
+        val delayMs = (index.coerceAtMost(15) * 20L)
         delay(delayMs)
         launch {
             animAlpha.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(220, easing = FastOutSlowInEasing),
-            )
-        }
-        launch {
-            animScale.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(280, easing = FastOutSlowInEasing),
+                animationSpec = tween(200, easing = FastOutSlowInEasing),
             )
         }
         animOffset.animateTo(
             targetValue = 0f,
-            animationSpec = tween(280, easing = FastOutSlowInEasing),
+            animationSpec = tween(250, easing = FastOutSlowInEasing),
         )
     }
 
-    val featuredNumbers = setOf(1, 18, 36, 55, 56, 67, 112, 113, 114)
-    val isFeatured  = surah.number in featuredNumbers
-    val accentColor = if (isFeatured) Color(0xFFFFD54F) else Color(0xFFFFB300)
-
-    val isMakki    = surah.revelationType.contains("mak", ignoreCase = true) ||
+    val isMakki = surah.revelationType.contains("mak", ignoreCase = true) ||
             surah.revelationType.contains("مك", ignoreCase = true)
     val badgeColor = if (isMakki) Color(0xFFFF8A00) else Color(0xFF00BCD4)
-    val badgeLabel = surah.revelationType.ifBlank { if (isMakki) "مكية" else "مدنية" }
+    val badgeLabel = if (isMakki) "مكية" else "مدنية"
+    val primaryColor = MaterialTheme.colorScheme.primary
 
-    Box(
+    Row(
         modifier = Modifier
+            .fillMaxWidth()
             .graphicsLayer {
-                alpha        = animAlpha.value
-                scaleX       = animScale.value
-                scaleY       = animScale.value
+                alpha = animAlpha.value
                 translationY = animOffset.value
-            },
+            }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        LiquidGlassCard(
-            onClick = onClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1.55f),
-            cornerRadius = 18.dp,
-            frost        = if (isFeatured) 9f else 6f,
-            glowAlpha    = if (isFeatured) 0.60f else 0.38f,
-            refraction   = 0.48f,
-            dispersion   = 0.25f,
+        IconButton(
+            onClick = onToggleFavorite,
+            modifier = Modifier.size(36.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
+            Icon(
+                imageVector = if (surah.isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                contentDescription = null,
+                tint = if (surah.isFavorite) Color(0xFFE91E63) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.size(20.dp),
+            )
+        }
+
+        // Surah info (middle, aligned right in RTL)
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
+                text = surah.nameArabic,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Start,
+                maxLines = 1,
+            )
+            Spacer(Modifier.height(2.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(accentColor.copy(alpha = 0.14f))
-                            .border(0.5.dp, accentColor.copy(alpha = 0.22f), RoundedCornerShape(8.dp)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = surah.number.toString(),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp,
-                            ),
-                            color = accentColor,
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(badgeColor.copy(alpha = 0.13f))
-                            .border(0.5.dp, badgeColor.copy(alpha = 0.22f), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
-                    ) {
-                        Text(
-                            text = badgeLabel,
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.5.sp),
-                            color = badgeColor,
-                        )
-                    }
-                }
-
-                // ── اسم السورة ──
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.End,
+                Text(
+                    text = "${surah.versesCount} آية",
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                )
+                Text(
+                    text = "ص ${surah.pageNumber}",
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(badgeColor.copy(alpha = 0.1f))
+                        .padding(horizontal = 5.dp, vertical = 2.dp),
                 ) {
                     Text(
-                        text = surah.nameArabic,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp,
-                        ),
-                        color = Color.White.copy(alpha = 0.88f),
-                        textAlign = TextAlign.End,
-                        maxLines = 1,
+                        text = badgeLabel,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        color = badgeColor,
                     )
-                    if (surah.nameEnglish.isNotBlank() && surah.nameEnglish != surah.nameArabic) {
-                        Text(
-                            text = surah.nameEnglish,
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp),
-                            color = Color.White.copy(alpha = 0.32f),
-                            textAlign = TextAlign.End,
-                            maxLines = 1,
-                        )
-                    }
-                }
-
-                // ── آيات + صفحة ──
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "ص ${surah.pageNumber}",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
-                        color = Color.White.copy(alpha = 0.22f),
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(3.dp),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(4.dp)
-                                .clip(CircleShape)
-                                .background(accentColor.copy(alpha = 0.50f)),
-                        )
-                        Text(
-                            text = "${surah.versesCount} ${stringResource(R.string.quran_verses)}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                            color = Color.White.copy(alpha = 0.46f),
-                        )
-                    }
                 }
             }
+        }
+
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(primaryColor.copy(alpha = 0.08f))
+                .border(0.5.dp, primaryColor.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = surah.number.toString(),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                ),
+                color = primaryColor,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SurahModeBottomSheet(
+    surah: QuranSurah,
+    onTextClick: () -> Unit,
+    onAudioClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // Handle bar
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(surfaceVariantColor)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Surah name
+        Text(
+            text = surah.nameArabic,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold,
+            ),
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Surah info
+        Text(
+            text = "${surah.versesCount} آية • صفحة ${surah.pageNumber}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Text mode button
+        ModeButton(
+            icon = Icons.Rounded.TextSnippet,
+            title = "قراءة نصية",
+            subtitle = "قراءة القرآن الكريم بالنص",
+            onClick = onTextClick,
+            containerColor = primaryColor.copy(alpha = 0.1f),
+            iconColor = primaryColor,
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Audio mode button
+        ModeButton(
+            icon = Icons.Rounded.AudioFile,
+            title = "استماع صوتي",
+            subtitle = "الاستماع لتلاوة القرآن الكريم",
+            onClick = onAudioClick,
+            containerColor = Color(0xFF4CAF50).copy(alpha = 0.1f),
+            iconColor = Color(0xFF4CAF50),
+        )
+    }
+}
+
+@Composable
+private fun ModeButton(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    containerColor: Color,
+    iconColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(containerColor)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(iconColor.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            )
         }
     }
 }
