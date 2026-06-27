@@ -48,6 +48,7 @@ fun App(
                 if (showBottomBar) {
                     AppBottomBar(
                         currentRoute = currentRoute.orEmpty(),
+                        hazeState = hazeState,
                         onNavigate = { route ->
                             if (currentRoute != route) {
                                 navController.navigate(route) {

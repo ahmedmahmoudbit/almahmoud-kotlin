@@ -69,6 +69,7 @@ import coil3.compose.AsyncImage
 import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import com.almahmoudApp.al_mahmoudapp.feature.stories.domain.model.StoryItem
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.components.StoryCard
@@ -76,7 +77,6 @@ import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.state.Stories
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.state.StoryDetailsUiState
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.viewmodel.StoryDetailsViewModel
 import com.almahmoudApp.al_mahmoudapp.feature.stories.presentation.viewmodel.StoriesViewModel
-import LiquidGlassCard
 import kotlinx.coroutines.delay
 
 @Composable

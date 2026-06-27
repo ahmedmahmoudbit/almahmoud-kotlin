@@ -1,6 +1,5 @@
 package com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen
 
-import LiquidGlassCard
 import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -65,6 +64,7 @@ import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.AppButton
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.domain.model.PrayerDay
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.domain.model.PrayerLocation

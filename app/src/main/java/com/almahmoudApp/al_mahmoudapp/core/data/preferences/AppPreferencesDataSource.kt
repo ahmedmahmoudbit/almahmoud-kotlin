@@ -60,6 +60,24 @@ class AppPreferencesDataSource @Inject constructor(
         }
     }
 
+    val favoriteSurahs: Flow<Set<String>> = dataStore.data
+        .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
+        .map { preferences ->
+            preferences[Keys.FAVORITE_SURAHS] ?: emptySet()
+        }
+
+    suspend fun toggleFavoriteSurah(surahNumber: Int) {
+        dataStore.edit { preferences ->
+            val surahStr = surahNumber.toString()
+            val current = preferences[Keys.FAVORITE_SURAHS] ?: emptySet()
+            if (current.contains(surahStr)) {
+                preferences[Keys.FAVORITE_SURAHS] = current - surahStr
+            } else {
+                preferences[Keys.FAVORITE_SURAHS] = current + surahStr
+            }
+        }
+    }
+
     val quranFontSize: Flow<Int> = dataStore.data
         .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
         .map { preferences ->
@@ -76,6 +94,7 @@ class AppPreferencesDataSource @Inject constructor(
         val IS_ONBOARDING_COMPLETED = booleanPreferencesKey("is_onboarding_completed")
         val FAVORITE_ANASHEED = stringSetPreferencesKey("favorite_anasheed")
         val FAVORITE_STORIES = stringSetPreferencesKey("favorite_stories")
+        val FAVORITE_SURAHS = stringSetPreferencesKey("favorite_surahs")
         val QURAN_FONT_SIZE = intPreferencesKey("quran_font_size")
     }
 

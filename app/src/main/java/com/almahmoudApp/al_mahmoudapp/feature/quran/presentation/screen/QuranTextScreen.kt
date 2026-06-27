@@ -1,6 +1,5 @@
 package com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen
 
-import LiquidGlassCard
 import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
@@ -75,6 +74,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.reading.ArabicTextUtils
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.reading.QuranContent
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.reading.QuranError

@@ -23,6 +23,8 @@ import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.screen.HomeRoute
 import com.almahmoudApp.al_mahmoudapp.feature.images.presentation.screen.ImagesRoute
 import com.almahmoudApp.al_mahmoudapp.feature.onboarding.presentation.screen.OnboardingRoute
+import com.almahmoudApp.al_mahmoudapp.feature.tasbeeh.presentation.screen.TasbeehRoute
+import com.almahmoudApp.al_mahmoudapp.feature.cards.presentation.screen.CardsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen.PrayerRoute
 import com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen.QotofRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranActionRoute
@@ -96,6 +98,8 @@ fun AppNavHost(
                         HomeFeatureKey.PRAYER -> navController.navigate(AppDestination.Prayer.route)
                         HomeFeatureKey.DOAA -> navController.navigate(AppDestination.Doaa.route)
                         HomeFeatureKey.AZKAR -> navController.navigate(AppDestination.AzkarList.route)
+                        HomeFeatureKey.TASBEEH -> navController.navigate(AppDestination.Tasbeeh.route)
+                        HomeFeatureKey.CARDS -> navController.navigate(AppDestination.Cards.route)
                         HomeFeatureKey.TAMILAT -> navController.navigate(AppDestination.Tamilat.route)
                         HomeFeatureKey.IMAGES -> navController.navigate(AppDestination.Images.route)
                         else -> Unit
@@ -324,6 +328,18 @@ fun AppNavHost(
             SettingsRoute(
                 contentPadding = innerPadding,
                 hazeState = hazeState,
+            )
+        }
+        composable(AppDestination.Tasbeeh.route) {
+            TasbeehRoute(
+                contentPadding = innerPadding,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(AppDestination.Cards.route) {
+            CardsRoute(
+                contentPadding = innerPadding,
+                onBack = { navController.popBackStack() }
             )
         }
     }

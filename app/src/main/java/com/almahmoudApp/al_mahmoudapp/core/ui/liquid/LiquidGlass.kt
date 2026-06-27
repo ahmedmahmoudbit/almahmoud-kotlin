@@ -1,6 +1,5 @@
-// LiquidGlassCard.kt
-// محاكاة iOS Liquid Glass بالكامل — بدون مكتبة خارجية
-// يعمل على Android 12+ مع تأثير Shader حقيقي، و Android < 12 بـ fallback جميل
+package com.almahmoudApp.al_mahmoudapp.core.ui.liquid
+
 
 import android.graphics.RenderEffect
 import android.graphics.RuntimeShader

@@ -81,6 +81,9 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.Quran
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.rememberCoroutineScope
 
 enum class FilterType {
     ALL, MAKKAH, MADINAH, FAVORITES
@@ -149,24 +152,43 @@ fun QuranScreen(
 
             // Tab row
             val selectedTabIndex = tabs.indexOfFirst { it.first == state.selectedFilter }.coerceAtLeast(0)
+            val coroutineScope = rememberCoroutineScope()
+            val pagerState = rememberPagerState(initialPage = selectedTabIndex) { tabs.size }
+
+            // Sync ViewModel selectedFilter with pager swipe transitions
+            LaunchedEffect(pagerState.currentPage) {
+                onFilterChange(tabs[pagerState.currentPage].first)
+            }
+
+            // Sync external filter changes back to pager
+            LaunchedEffect(state.selectedFilter) {
+                val filterIndex = tabs.indexOfFirst { it.first == state.selectedFilter }.coerceAtLeast(0)
+                if (pagerState.currentPage != filterIndex) {
+                    pagerState.animateScrollToPage(filterIndex)
+                }
+            }
 
             TabRow(
-                selectedTabIndex = selectedTabIndex,
+                selectedTabIndex = pagerState.currentPage,
                 containerColor = Color.Transparent,
                 contentColor = MaterialTheme.colorScheme.primary,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
                         color = MaterialTheme.colorScheme.primary,
                     )
                 },
             ) {
                 tabs.forEachIndexed { index, (type, label) ->
-                    val isActive = selectedTabIndex == index
+                    val isActive = pagerState.currentPage == index
 
                     Tab(
                         selected = isActive,
-                        onClick = { onFilterChange(type) },
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
                         text = {
                             Text(
                                 text = label,
@@ -179,18 +201,42 @@ fun QuranScreen(
                 }
             }
 
-            // Surah list
-            val filteredSurahs = state.filteredSurahs
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) { page ->
+                val filter = tabs[page].first
+                val surahsForPage = remember(state.content, filter, state.query) {
+                    val content = state.content ?: return@remember emptyList()
+                    content.surahs.filter { surah ->
+                        val matchesQuery = state.query.isEmpty() || 
+                                surah.nameArabic.contains(state.query) || 
+                                surah.nameEnglish.contains(state.query, ignoreCase = true) ||
+                                surah.number.toString() == state.query
 
-            if (filteredSurahs.isEmpty()) {
-                EmptyView()
-            } else {
-                SurahList(
-                    surahs = filteredSurahs,
-                    contentPadding = contentPadding,
-                    onSurahClick = { selectedSurah = it },
-                    onToggleFavorite = onToggleFavorite,
-                )
+                        val matchesFilter = when (filter) {
+                            FilterType.ALL -> true
+                            FilterType.MAKKAH -> surah.revelationType.equals("Meccan", ignoreCase = true)
+                            FilterType.MADINAH -> surah.revelationType.equals("Medinan", ignoreCase = true)
+                            FilterType.FAVORITES -> surah.isFavorite
+                        }
+
+                        matchesQuery && matchesFilter
+                    }
+                }
+
+                if (surahsForPage.isEmpty()) {
+                    EmptyView()
+                } else {
+                    SurahList(
+                        surahs = surahsForPage,
+                        contentPadding = contentPadding,
+                        onSurahClick = { selectedSurah = it },
+                        onToggleFavorite = onToggleFavorite,
+                    )
+                }
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.almahmoudApp.al_mahmoudapp.feature.home.presentation.components
 
-import LiquidGlassCard
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -49,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.almahmoudApp.al_mahmoudapp.R
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeature
 import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
 

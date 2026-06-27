@@ -11,21 +11,25 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.FilterTy
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.state.QuranUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import com.almahmoudApp.al_mahmoudapp.core.data.preferences.AppPreferencesDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class QuranViewModel @Inject constructor(
     private val getQuranContentUseCase: GetQuranContentUseCase,
+    private val appPreferencesDataSource: AppPreferencesDataSource,
 ) : ViewModel() {
     private val _state = MutableStateFlow(QuranUiState())
     val state: StateFlow<QuranUiState> = _state.asStateFlow()
 
     init {
         loadQuranContent()
+        observeFavorites()
     }
 
     fun onQueryChange(query: String) {
@@ -59,20 +63,27 @@ class QuranViewModel @Inject constructor(
     }
 
     fun toggleFavorite(surahNumber: Int) {
-        _state.update { current ->
-            val updatedContent = current.content?.copy(
-                surahs = current.content.surahs.map { surah ->
-                    if (surah.number == surahNumber) {
-                        surah.copy(isFavorite = !surah.isFavorite)
-                    } else {
-                        surah
-                    }
+        viewModelScope.launch {
+            appPreferencesDataSource.toggleFavoriteSurah(surahNumber)
+        }
+    }
+
+    private fun observeFavorites() {
+        viewModelScope.launch {
+            appPreferencesDataSource.favoriteSurahs.collect { favoriteSet ->
+                _state.update { current ->
+                    val content = current.content ?: return@update current
+                    val updatedContent = content.copy(
+                        surahs = content.surahs.map { surah ->
+                            surah.copy(isFavorite = favoriteSet.contains(surah.number.toString()))
+                        }
+                    )
+                    current.copy(
+                        content = updatedContent,
+                        filteredSurahs = filterSurahsByType(updatedContent, current.selectedFilter, current.query)
+                    )
                 }
-            )
-            current.copy(
-                content = updatedContent,
-                filteredSurahs = filterSurahsByType(updatedContent, current.selectedFilter, current.query),
-            )
+            }
         }
     }
 
@@ -81,12 +92,22 @@ class QuranViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true, errorMessage = null) }
             getQuranContentUseCase()
                 .onSuccess { content ->
+                    val favoriteSet = try {
+                        appPreferencesDataSource.favoriteSurahs.first()
+                    } catch (e: Exception) {
+                        emptySet()
+                    }
+                    val mappedContent = content.copy(
+                        surahs = content.surahs.map { surah ->
+                            surah.copy(isFavorite = favoriteSet.contains(surah.number.toString()))
+                        }
+                    )
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            content = content,
-                            filteredSurahs = filterSurahs(content, it.query),
-                            filteredReaders = filterReaders(content, it.query),
+                            content = mappedContent,
+                            filteredSurahs = filterSurahsByType(mappedContent, it.selectedFilter, it.query),
+                            filteredReaders = filterReaders(mappedContent, it.query),
                             errorMessage = null,
                         )
                     }

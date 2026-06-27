@@ -1,6 +1,5 @@
 package com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.components
 
-import LiquidGlassCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +21,7 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 
 @Composable
 fun AyatTopicCard(
