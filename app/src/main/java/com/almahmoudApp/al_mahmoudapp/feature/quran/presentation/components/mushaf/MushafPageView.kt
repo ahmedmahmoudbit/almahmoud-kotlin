@@ -19,13 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -33,12 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafLine
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafLineType
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafPage
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafWord
+import com.almahmoudApp.al_mahmoudapp.feature.quran.util.QuranGlyphs
 
 private const val MUSHAF_LINE_HEIGHT_MULT = 2.0f
 private const val MUSHAF_CENTERED_GAP_FRACTION = 0.22f
@@ -270,8 +273,18 @@ private fun AyahLine(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         words.forEach { word ->
+            val isAyahNumber = remember(word.text) {
+                QuranGlyphs.isAyahNumber(word.text)
+            }
+
+            val displayText = if (isAyahNumber) {
+                QuranGlyphs.formatAyahNumberForDisplay(word.text)
+            } else {
+                word.text
+            }
+
             Text(
-                text = word.text,
+                text = displayText,
                 style = TextStyle(
                     fontFamily = UthmanicHafsFont,
                     fontSize = fontSize.sp,

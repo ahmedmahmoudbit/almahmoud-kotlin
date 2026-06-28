@@ -38,4 +38,13 @@ object QuranGlyphs {
     fun isAyahNumber(text: String): Boolean {
         return text.isNotBlank() && text.all { it in '\u0660'..'\u0669' }
     }
+
+    /**
+     * Wraps verse numbers with proper directional marks to prevent reversal.
+     * Uses LRM (U+200E) to ensure proper LTR display of numbers.
+     */
+    fun formatAyahNumberForDisplay(text: String): String {
+        val lrm = '\u200E'  // Left-to-Right Mark
+        return "$lrm$text$lrm"
+    }
 }
