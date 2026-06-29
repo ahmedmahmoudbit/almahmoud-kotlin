@@ -13,4 +13,19 @@ val MeQuranFont = FontFamily(
     Font(R.font.me_quran, weight = FontWeight.Normal),
 )
 
+/** Uthmani Hafs script font - authentic Quran mushaf rendering. */
+val UthmanicHafsFont = FontFamily(
+    Font(R.font.uthmanic_hafs, weight = FontWeight.Normal),
+)
+
+/** Common Quran glyphs font (title frame, basmala, etc). */
+val QuranCommonFont = FontFamily(
+    Font(R.font.quran_common, weight = FontWeight.Normal),
+)
+
+/** Surah icon font - each surah has a decorative icon glyph. */
+val SurahIconFont = FontFamily(
+    Font(R.font.suracon, weight = FontWeight.Normal),
+)
+
 /** QFC Surah name font - displays surah name using SurahGlyphs. */

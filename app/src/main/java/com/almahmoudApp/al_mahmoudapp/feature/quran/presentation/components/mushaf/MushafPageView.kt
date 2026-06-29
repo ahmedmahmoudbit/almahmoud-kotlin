@@ -1,12 +1,10 @@
 package com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.mushaf
 
-import AmiriFont
 import QuranCommonFont
 import SurahIconFont
 import UthmanicHafsFont
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,26 +13,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafLine
@@ -43,7 +32,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafPage
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafWord
 import com.almahmoudApp.al_mahmoudapp.feature.quran.util.QuranGlyphs
 
-private const val MUSHAF_LINE_HEIGHT_MULT = 2.0f
+private const val MUSHAF_LINE_HEIGHT_MULT = 1.0f
 private const val MUSHAF_CENTERED_GAP_FRACTION = 0.22f
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -53,7 +42,7 @@ fun MushafPageView(
     fontSize: Float,
     selectedAyahId: Int? = null,
     onAyahClick: ((Int) -> Unit)? = null,
-    onAyahLongClick: ((Int, Int) -> Unit)? = null,
+    onAyahLongClick: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -63,7 +52,7 @@ fun MushafPageView(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp),
     ) {
         page.lines.forEachIndexed { index, line ->
             MushafLineView(
@@ -82,8 +71,8 @@ fun MushafPageView(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 2.dp)
-                            .height(0.5.dp)
+                            .padding(vertical = 0.5.dp)
+                            .height(0.3.dp)
                             .background(lineColor)
                     )
                 }
@@ -101,7 +90,7 @@ private fun MushafLineView(
     primaryColor: Color,
     selectedAyahId: Int?,
     onAyahClick: ((Int) -> Unit)?,
-    onAyahLongClick: ((Int, Int) -> Unit)?,
+    onAyahLongClick: ((Int) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     when (line.lineType) {
@@ -164,7 +153,9 @@ private fun SurahNameLine(
 
         Text(
             text = surahIcon,
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
             style = TextStyle(
                 fontFamily = SurahIconFont,
                 fontSize = 30.sp,
@@ -236,15 +227,14 @@ private fun AyahLine(
     isCentered: Boolean,
     selectedAyahId: Int?,
     onAyahClick: ((Int) -> Unit)?,
-    onAyahLongClick: ((Int, Int) -> Unit)?,
+    onAyahLongClick: ((Int) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     if (words.isEmpty()) return
 
     val firstWord = words.first()
     val ayahId = firstWord.ayahId
-    val (surahNo, verseNo) = com.almahmoudApp.al_mahmoudapp.feature.quran.util.QuranConstants.getChapterAndVerseFromAyahId(ayahId)
-    val isSelected = selectedAyahId == ayahId
+    val isSelected = selectedAyahId == ayahId && words.all { it.ayahId == ayahId }
 
     val arrangement = if (isCentered) {
         val gapDp = (fontSize * MUSHAF_CENTERED_GAP_FRACTION).dp
@@ -255,19 +245,12 @@ private fun AyahLine(
 
     val lineHeight = (fontSize * MUSHAF_LINE_HEIGHT_MULT).sp
 
-    val bgColor = if (isSelected) {
-        primaryColor.copy(alpha = 0.1f)
-    } else {
-        Color.Transparent
-    }
-
     Row(
         modifier = modifier
-            .padding(vertical = 1.dp)
-            .background(bgColor)
-            .combinedClickable(
-                onClick = { onAyahClick?.invoke(ayahId) },
-                onLongClick = { onAyahLongClick?.invoke(surahNo, verseNo) },
+            .padding(vertical = 0.5.dp)
+            .background(
+                if (isSelected) primaryColor.copy(alpha = 0.1f)
+                else Color.Transparent
             ),
         horizontalArrangement = arrangement,
         verticalAlignment = Alignment.CenterVertically,
@@ -276,25 +259,48 @@ private fun AyahLine(
             val isAyahNumber = remember(word.text) {
                 QuranGlyphs.isAyahNumber(word.text)
             }
+            val isWordSelected = selectedAyahId == word.ayahId && !isSelected
 
-            val displayText = if (isAyahNumber) {
-                QuranGlyphs.formatAyahNumberForDisplay(word.text)
-            } else {
-                word.text
+            Box(
+                modifier = Modifier
+                    .background(
+                        if (isWordSelected) primaryColor.copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
+                    .combinedClickable(
+                        onClick = { onAyahClick?.invoke(word.ayahId) },
+                        onLongClick = { onAyahLongClick?.invoke(word.ayahId) },
+                    ),
+            ) {
+                if (isAyahNumber) {
+                    Text(
+                        text = word.text.reversed(),
+                        style = TextStyle(
+                            fontFamily = UthmanicHafsFont,
+                            fontSize = (fontSize * 1.15f).sp,
+                            lineHeight = (fontSize * MUSHAF_LINE_HEIGHT_MULT * 1.15f).sp,
+                            fontWeight = FontWeight.Bold,
+                            color = primaryColor,
+                            textDirection = TextDirection.Rtl,
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                } else {
+                    Text(
+                        text = word.text,
+                        style = TextStyle(
+                            fontFamily = UthmanicHafsFont,
+                            fontSize = fontSize.sp,
+                            lineHeight = lineHeight,
+                            color = textColor,
+                            textDirection = TextDirection.Rtl,
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
             }
-
-            Text(
-                text = displayText,
-                style = TextStyle(
-                    fontFamily = UthmanicHafsFont,
-                    fontSize = fontSize.sp,
-                    lineHeight = lineHeight,
-                    color = textColor,
-                    textDirection = TextDirection.Rtl,
-                ),
-                maxLines = 1,
-                softWrap = false,
-            )
         }
     }
 }
@@ -306,7 +312,7 @@ private fun getSurahNameArabic(surahNo: Int): String {
         "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل",
         "الإسراء", "الكهف", "مريم", "طه", "الأنبياء", "الحج",
         "المؤمنون", "النور", "الفرقان", "الشعراء", "النمل",
-        "القصص", "العنكبوت", "الروم", "لقمان", "الأحزاب",
+        "القصص", "العنكبوت", "الروم", "لقمان", "السجدة", "الأحزاب",
         "سبأ", "فاطر", "يس", "الصافات", "ص", "الزمر",
         "غافر", "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية",
         "الأحقاف", "محمد", "الفتح", "الحجرات", "ق", "الذاريات",

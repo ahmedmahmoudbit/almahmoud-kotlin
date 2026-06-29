@@ -564,7 +564,6 @@ private fun SurahModeBottomSheet(
             .padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Handle bar
         Box(
             modifier = Modifier
                 .width(40.dp)
@@ -587,7 +586,6 @@ private fun SurahModeBottomSheet(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Surah info
         Text(
             text = "${surah.versesCount} آية • صفحة ${surah.pageNumber}",
             style = MaterialTheme.typography.bodySmall,

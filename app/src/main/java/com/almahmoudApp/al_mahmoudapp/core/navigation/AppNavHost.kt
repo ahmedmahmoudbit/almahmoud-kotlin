@@ -27,6 +27,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.tasbeeh.presentation.screen.Tasbee
 import com.almahmoudApp.al_mahmoudapp.feature.cards.presentation.screen.CardsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen.PrayerRoute
 import com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen.QotofRoute
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.MushafPageScreen
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranActionRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranAudioRoute
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.screen.QuranReadersRoute
@@ -199,11 +200,7 @@ fun AppNavHost(
                 hazeState = hazeState,
                 onNavigateToText = { surahNumber, page, name ->
                     navController.navigate(
-                        AppDestination.QuranText.createRoute(
-                            surahNumber = surahNumber,
-                            page = page,
-                            name = name,
-                        )
+                        AppDestination.MushafPage.createRoute(page = page, surahNumber = surahNumber)
                     )
                 },
                 onNavigateToAudio = { surahNumber, page, name ->
@@ -234,11 +231,7 @@ fun AppNavHost(
                 onBack = { navController.popBackStack() },
                 onRead = { surahNumber, page, name ->
                     navController.navigate(
-                        AppDestination.QuranText.createRoute(
-                            surahNumber = surahNumber,
-                            page = page,
-                            name = name,
-                        )
+                        AppDestination.MushafPage.createRoute(page = page, surahNumber = surahNumber)
                     )
                 },
                 onAudio = { surahNumber, page, name ->
@@ -303,6 +296,11 @@ fun AppNavHost(
                         )
                     )
                 },
+                onNavigateToMushaf = { mushafPage ->
+                    navController.navigate(
+                        AppDestination.MushafPage.createRoute(page = mushafPage)
+                    )
+                },
             )
         }
         composable(
@@ -328,6 +326,20 @@ fun AppNavHost(
             SettingsRoute(
                 contentPadding = innerPadding,
                 hazeState = hazeState,
+            )
+        }
+        composable(
+            route = AppDestination.MushafPage.route,
+            arguments = listOf(
+                navArgument("page") { type = NavType.IntType; defaultValue = 1 },
+                navArgument("surahNumber") { type = NavType.IntType; defaultValue = 0 },
+            ),
+        ) { backStackEntry ->
+            MushafPageScreen(
+                contentPadding = innerPadding,
+                hazeState = hazeState,
+                surahNumber = backStackEntry.arguments?.getInt("surahNumber")?.takeIf { it > 0 },
+                onBack = { navController.popBackStack() },
             )
         }
         composable(AppDestination.Tasbeeh.route) {

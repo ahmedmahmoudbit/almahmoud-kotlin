@@ -45,6 +45,12 @@ sealed class AppDestination(val route: String) {
         }
     }
 
+    data object MushafPage : AppDestination("quran/mushaf?page={page}&surahNumber={surahNumber}") {
+        fun createRoute(page: Int = 1, surahNumber: Int? = null): String {
+            return "quran/mushaf?page=$page&surahNumber=${surahNumber ?: 0}"
+        }
+    }
+
     data object QuranAudio : AppDestination("quran/audio?readerName={readerName}&readerImage={readerImage}&audioBaseUrl={audioBaseUrl}&page={page}") {
         fun createRoute(
             readerName: String,

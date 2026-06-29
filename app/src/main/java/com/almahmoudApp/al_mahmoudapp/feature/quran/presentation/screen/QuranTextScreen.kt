@@ -36,6 +36,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.FontDownload
+import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.DropdownMenu
@@ -97,6 +98,7 @@ fun QuranTextScreen(
     surahName: String,
     onBack: () -> Unit,
     onNavigateToNextSurah: (Int, Int, String) -> Unit,
+    onNavigateToMushaf: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier,
     viewModel: QuranTextViewModel = hiltViewModel(),
 ) {
@@ -196,6 +198,7 @@ fun QuranTextScreen(
                                 onNavigateToNextSurah(nextNumber, nextPage, nextName)
                             }
                         },
+                        onNavigateToMushaf = onNavigateToMushaf,
                     )
                 }
 
@@ -276,6 +279,7 @@ private fun ReadingBody(
     onToggleControls: () -> Unit,
     onVerseSelected: (com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranVerse) -> Unit,
     onNextSurahClick: () -> Unit,
+    onNavigateToMushaf: ((Int) -> Unit)? = null,
 ) {
     // Search state
     var isSearchVisible by remember { mutableStateOf(false) }
@@ -358,6 +362,7 @@ private fun ReadingBody(
                 onOpenScrollSpeedSheet = onOpenScrollSpeedSheet,
                 isAutoScrolling = isAutoScrolling,
                 onToggleSearch = { isSearchVisible = !isSearchVisible },
+                onNavigateToMushaf = onNavigateToMushaf,
             )
         }
         
@@ -406,6 +411,7 @@ private fun QuranReadingTopBar(
     onOpenScrollSpeedSheet: () -> Unit,
     isAutoScrolling: Boolean,
     onToggleSearch: () -> Unit,
+    onNavigateToMushaf: ((Int) -> Unit)? = null,
 ) {
     var showSettings by rememberSaveable { mutableStateOf(false) }
 
@@ -505,6 +511,39 @@ private fun QuranReadingTopBar(
                             tint = Color(0xFF4DD0C4),
                             modifier = Modifier.size(20.dp),
                         )
+                    }
+                    if (onNavigateToMushaf != null) {
+                        // Divider line
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(0.5.dp)
+                                .background(Color.White.copy(alpha = 0.10f))
+                        )
+                        // Mushaf view option
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showSettings = false
+                                    onNavigateToMushaf(1)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = "عرض المصحف",
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Icon(
+                                imageVector = Icons.Rounded.MenuBook,
+                                contentDescription = null,
+                                tint = Color(0xFF4DD0C4),
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
                     }
                 }
             }

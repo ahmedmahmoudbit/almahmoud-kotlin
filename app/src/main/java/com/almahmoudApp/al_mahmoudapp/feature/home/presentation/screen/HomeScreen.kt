@@ -1,6 +1,8 @@
 package com.almahmoudApp.al_mahmoudapp.feature.home.presentation.screen
 
 import AmiriFont
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -268,6 +270,7 @@ private fun getLocalizedPrayerName(englishName: String, isFriday: Boolean = fals
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 @Composable
 private fun HomePrayerPreview(
     day: PrayerDay?,
