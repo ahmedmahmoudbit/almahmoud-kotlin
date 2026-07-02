@@ -12,6 +12,7 @@ data class MushafUiState(
     val currentPage: Int = 1,
     val totalPages: Int = 604,
     val page: MushafPage? = null,
+    val loadedPages: Map<Int, MushafPage> = emptyMap(),
     val showPageNavigator: Boolean = false,
     val selectedVerseDetails: QuranVerseDetails? = null,
     val isVerseDetailsLoading: Boolean = false,

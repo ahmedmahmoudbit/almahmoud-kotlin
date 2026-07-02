@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.rememberScrollState
@@ -118,8 +120,10 @@ fun StoriesScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .statusBarsPadding()
                     .padding(contentPadding)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .navigationBarsPadding(),
             ) {
                 // Customized Header with Glass Actions (Search and Favorite Filtering)
                 Row(
@@ -307,7 +311,7 @@ fun StoryDetailsScreen(
                 state.isLoading -> LoadingView()
                 state.errorMessage != null -> ErrorView(message = state.errorMessage)
                 state.story == null -> ErrorView(message = stringResource(R.string.error_view_message))
-                else -> Box(modifier = Modifier.fillMaxSize()) {
+                else -> Box(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
                     // Main Scrollable Content
                     Column(
                         modifier = Modifier

@@ -31,9 +31,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -71,7 +72,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -91,6 +91,9 @@ import coil3.request.CachePolicy
 import coil3.request.crossfade
 import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.data.AudioCacheManager
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.QuranVideoBackground
+import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.components.rememberQuranVideoPlayerState
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.QuranViewModel
 import dev.chrisbanes.haze.HazeState
 import java.text.DecimalFormat
@@ -135,6 +138,8 @@ fun QuranAudioRoute(
 
     var showSurahSheet by remember { mutableStateOf(false) }
     var showReaderSheet by remember { mutableStateOf(false) }
+
+    val videoState = rememberQuranVideoPlayerState(0)
 
     DisposableEffect(Unit) {
         onDispose {
@@ -250,51 +255,22 @@ fun QuranAudioRoute(
         label = "waveAlpha2",
     )
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(DARK_BG, DARK_BG_LIGHT, DARK_BG),
-                ),
-            ),
+    QuranVideoBackground(
+        state = videoState,
+        modifier = modifier.fillMaxSize(),
     ) {
-        // Decorative gradient circles
-        Box(
-            modifier = Modifier
-                .size(300.dp)
-                .offset(x = (-50).dp, y = (-80).dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            ACCENT_TEAL.copy(alpha = 0.12f),
-                            Color.Transparent,
-                        ),
-                    ),
-                ),
-        )
-        Box(
-            modifier = Modifier
-                .size(250.dp)
-                .align(Alignment.BottomEnd)
-                .offset(x = 40.dp, y = 60.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            ACCENT_GOLD.copy(alpha = 0.08f),
-                            Color.Transparent,
-                        ),
-                    ),
-                ),
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            val currentSurah = quranState.content?.surahs?.firstOrNull { it.pageNumber == currentPage }
+            val surahLabel = currentSurah?.nameArabic ?: "${stringResource(R.string.quran_page)} $currentPage"
+
             // Top Bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -302,14 +278,14 @@ fun QuranAudioRoute(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 // Back button
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
-                        .border(1.dp, Color.White.copy(alpha = 0.15f), CircleShape)
-                        .clickable(onClick = onBack),
-                    contentAlignment = Alignment.Center,
+                LiquidGlassCard(
+                    onClick = onBack,
+                    modifier = Modifier.size(44.dp),
+                    cornerRadius = 22.dp,
+                    tintColor = Color.White,
+                    refraction = 0.25f,
+                    frost = 3f,
+                    glowAlpha = 0.2f,
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
@@ -319,18 +295,29 @@ fun QuranAudioRoute(
                     )
                 }
 
+                // Surah name - reader name
+                Text(
+                    text = "$surahLabel - $currentReaderName",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                )
+
                 // Options button
                 var showOptionsMenu by remember { mutableStateOf(false) }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                            .border(1.dp, Color.White.copy(alpha = 0.15f), CircleShape)
-                            .clickable { showOptionsMenu = !showOptionsMenu },
-                        contentAlignment = Alignment.Center,
+                    LiquidGlassCard(
+                        onClick = { showOptionsMenu = !showOptionsMenu },
+                        modifier = Modifier.size(44.dp),
+                        cornerRadius = 22.dp,
+                        tintColor = Color.White,
+                        refraction = 0.25f,
+                        frost = 3f,
+                        glowAlpha = 0.2f,
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Tune,
@@ -357,7 +344,10 @@ fun QuranAudioRoute(
                             OptionsMenuItem(
                                 text = stringResource(R.string.quran_change_background),
                                 icon = Icons.Rounded.Wallpaper,
-                                onClick = { showOptionsMenu = false },
+                                onClick = {
+                                    showOptionsMenu = false
+                                    videoState.showVideoPicker = true
+                                },
                             )
                             OptionsDivider()
                             OptionsMenuItem(
@@ -449,141 +439,35 @@ fun QuranAudioRoute(
 
             Spacer(modifier = Modifier.weight(0.8f))
 
-            val currentSurah = quranState.content?.surahs?.firstOrNull { it.pageNumber == currentPage }
-            val surahLabel = currentSurah?.nameArabic ?: "${stringResource(R.string.quran_page)} $currentPage"
-
-            // Player card
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color.White.copy(alpha = 0.08f))
-                    .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(24.dp))
-                    .padding(horizontal = 18.dp, vertical = 18.dp),
-            ) {
-                // Header
-                Text(
-                    text = "$surahLabel - $currentReaderName",
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Progress bar
-                val currentPosStr = remember(positionMs) {
-                    val sec = (positionMs / 1000) % 60
-                    val min = (positionMs / 1000) / 60
+            // Progress bar
+            val currentPosStr = remember(positionMs) {
+                val sec = (positionMs / 1000) % 60
+                val min = (positionMs / 1000) / 60
+                String.format("%02d:%02d", min, sec)
+            }
+            val durationStr = remember(durationMs) {
+                val totalSec = (durationMs / 1000)
+                if (totalSec <= 0) "00:00" else {
+                    val sec = totalSec % 60
+                    val min = totalSec / 60
                     String.format("%02d:%02d", min, sec)
                 }
-                val durationStr = remember(durationMs) {
-                    val totalSec = (durationMs / 1000)
-                    if (totalSec <= 0) "00:00" else {
-                        val sec = totalSec % 60
-                        val min = totalSec / 60
-                        String.format("%02d:%02d", min, sec)
-                    }
-                }
+            }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
                     Text(
                         text = currentPosStr,
                         color = Color.White.copy(alpha = 0.55f),
                         style = MaterialTheme.typography.labelSmall,
                     )
-
-                    WaveformSeekbar(
-                        positionMs = positionMs,
-                        durationMs = durationMs,
-                        onSeek = { newPos ->
-                            positionMs = newPos
-                            player?.seekTo(newPos)
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(32.dp),
-                    )
-
-                    Text(
-                        text = "-$durationStr",
-                        color = Color.White.copy(alpha = 0.55f),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // Player buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = {
-                        val target = (positionMs - 10000).coerceAtLeast(0)
-                        player?.seekTo(target)
-                        positionMs = target
-                    }) {
-                        Icon(
-                            imageVector = Icons.Rounded.FastRewind,
-                            contentDescription = "Rewind 10s",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp),
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            if (isPrepared) {
-                                if (player?.isPlaying == true) {
-                                    player?.pause()
-                                    isPlaying = false
-                                } else {
-                                    player?.start()
-                                    isPlaying = true
-                                }
-                            } else {
-                                isPlaying = true
-                            }
-                        },
-                        modifier = Modifier.size(48.dp),
-                    ) {
-                        if (isDownloading || (isPlaying && !isPrepared)) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.5.dp,
-                            )
-                        } else {
-                            Icon(
-                                imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(42.dp),
-                            )
-                        }
-                    }
-
-                    IconButton(onClick = {
-                        val target = (positionMs + 10000).coerceAtMost(durationMs)
-                        player?.seekTo(target)
-                        positionMs = target
-                    }) {
-                        Icon(
-                            imageVector = Icons.Rounded.FastForward,
-                            contentDescription = "Forward 10s",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp),
-                        )
-                    }
 
                     IconButton(onClick = {
                         isLooping = !isLooping
@@ -593,9 +477,94 @@ fun QuranAudioRoute(
                             imageVector = Icons.Rounded.Repeat,
                             contentDescription = "Repeat",
                             tint = if (isLooping) ACCENT_TEAL else Color.White.copy(alpha = 0.65f),
-                            modifier = Modifier.size(22.dp),
+                            modifier = Modifier.size(18.dp),
                         )
                     }
+                }
+
+                WaveformSeekbar(
+                    positionMs = positionMs,
+                    durationMs = durationMs,
+                    onSeek = { newPos ->
+                        positionMs = newPos
+                        player?.seekTo(newPos)
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(32.dp),
+                )
+
+                Text(
+                    text = "-$durationStr",
+                    color = Color.White.copy(alpha = 0.55f),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Player buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = {
+                    val target = (positionMs - 10000).coerceAtLeast(0)
+                    player?.seekTo(target)
+                    positionMs = target
+                }) {
+                    Icon(
+                        imageVector = Icons.Rounded.FastRewind,
+                        contentDescription = "Rewind 10s",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        if (isPrepared) {
+                            if (player?.isPlaying == true) {
+                                player?.pause()
+                                isPlaying = false
+                            } else {
+                                player?.start()
+                                isPlaying = true
+                            }
+                        } else {
+                            isPlaying = true
+                        }
+                    },
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    if (isDownloading || (isPlaying && !isPrepared)) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.5.dp,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(42.dp),
+                        )
+                    }
+                }
+
+                IconButton(onClick = {
+                    val target = (positionMs + 10000).coerceAtMost(durationMs)
+                    player?.seekTo(target)
+                    positionMs = target
+                }) {
+                    Icon(
+                        imageVector = Icons.Rounded.FastForward,
+                        contentDescription = "Forward 10s",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp),
+                    )
                 }
             }
 

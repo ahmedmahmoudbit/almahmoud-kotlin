@@ -3,6 +3,7 @@ package com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.almahmoudApp.al_mahmoudapp.core.data.preferences.AppPreferencesDataSource
 import com.almahmoudApp.al_mahmoudapp.feature.quran.data.api.AudioReciter
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.usecase.GetMushafPageCountUseCase
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.usecase.GetMushafPageUseCase
@@ -13,11 +14,14 @@ import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.usecase.GetVerseDetai
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.state.MushafUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class MushafViewModel @Inject constructor(
@@ -28,12 +32,18 @@ class MushafViewModel @Inject constructor(
     private val getQuranVersesUseCase: GetQuranVersesUseCase,
     private val getVerseDetailsUseCase: GetVerseDetailsUseCase,
     private val getVerseAudioUseCase: GetVerseAudioUseCase,
+    private val appPreferencesDataSource: AppPreferencesDataSource,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MushafUiState())
     val state: StateFlow<MushafUiState> = _state.asStateFlow()
 
-    private var loadedPages = mutableSetOf<Int>()
+    /**
+     * Cache of fully-loaded pages keyed by page number.
+     * Replacing the old Set so we can restore page data when the user
+     * swipes back to an already-visited page — fixing the blank-page bug.
+     */
+    private val pageCache = mutableMapOf<Int, com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafPage>()
     private var loadingPageNumber = -1
 
     init {
@@ -41,13 +51,29 @@ class MushafViewModel @Inject constructor(
     }
 
     fun loadPage(pageNumber: Int) {
-        if (pageNumber in loadedPages || loadingPageNumber == pageNumber) return
+        val cached = pageCache[pageNumber]
+        if (cached != null) {
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    page = cached,
+                    currentPage = pageNumber,
+                    errorMessage = null,
+                    loadedPages = pageCache.toMap(),
+                )
+            }
+            saveLastReadPosition(cached)
+            return
+        }
+
+        if (loadingPageNumber == pageNumber) return
+
         loadingPageNumber = pageNumber
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            _state.update { it.copy(isLoading = pageCache.isEmpty(), errorMessage = null) }
             getMushafPageUseCase(pageNumber)
                 .onSuccess { page ->
-                    loadedPages.add(pageNumber)
+                    pageCache[pageNumber] = page
                     loadingPageNumber = -1
                     _state.update {
                         it.copy(
@@ -55,8 +81,11 @@ class MushafViewModel @Inject constructor(
                             page = page,
                             currentPage = pageNumber,
                             errorMessage = null,
+                            loadedPages = pageCache.toMap(),
                         )
                     }
+                    saveLastReadPosition(page)
+                    preloadAdjacentPages(pageNumber)
                 }
                 .onFailure { error ->
                     loadingPageNumber = -1
@@ -67,6 +96,35 @@ class MushafViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    private fun saveLastReadPosition(page: com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.MushafPage) {
+        val surahNo = page.lines.firstNotNullOfOrNull { it.surahNo } ?: 1
+        val surahName = page.surahNames.firstOrNull().orEmpty()
+        viewModelScope.launch(Dispatchers.IO + NonCancellable) {
+            appPreferencesDataSource.setLastReadPage(page.pageNumber)
+            appPreferencesDataSource.setLastReadSurah(surahNo)
+            if (surahName.isNotEmpty()) {
+                appPreferencesDataSource.setLastReadSurahName(surahName)
+            }
+        }
+    }
+
+    private fun preloadAdjacentPages(currentPage: Int) {
+        val total = _state.value.totalPages
+        val pagesToLoad = listOfNotNull(
+            (currentPage - 1).takeIf { it >= 1 && it !in pageCache },
+            (currentPage + 1).takeIf { it <= total && it !in pageCache },
+            (currentPage - 2).takeIf { it >= 1 && it !in pageCache },
+            (currentPage + 2).takeIf { it <= total && it !in pageCache },
+        )
+        for (page in pagesToLoad) {
+            viewModelScope.launch {
+                getMushafPageUseCase(page)
+                    .onSuccess { p -> pageCache[page] = p }
+                    .onFailure { /* silent */ }
+            }
         }
     }
 
@@ -209,7 +267,9 @@ class MushafViewModel @Inject constructor(
     }
 
     fun retry() {
-        loadedPages.remove(_state.value.currentPage)
+        // Evict from cache so loadPage triggers a fresh network request.
+        pageCache.remove(_state.value.currentPage)
+        _state.update { it.copy(loadedPages = pageCache.toMap()) }
         loadPage(_state.value.currentPage)
     }
 

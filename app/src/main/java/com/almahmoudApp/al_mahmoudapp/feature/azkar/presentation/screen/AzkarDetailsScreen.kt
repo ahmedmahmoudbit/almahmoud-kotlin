@@ -16,17 +16,20 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -40,7 +43,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +60,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -69,12 +73,8 @@ import com.almahmoudApp.al_mahmoudapp.feature.azkar.domain.model.AzkarCategory
 import com.almahmoudApp.al_mahmoudapp.feature.azkar.domain.model.ZikrItem
 import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.state.AzkarDetailsUiState
 import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.viewmodel.AzkarDetailsViewModel
-import kotlinx.coroutines.delay
 
 // ─── Private palette ─────────────────────────────────────────────────────────
-private val BgTop      = Color(0xFF0A1810)
-private val BgMid      = Color(0xFF0C2018)
-private val BgBot      = Color(0xFF081410)
 private val GoldAccent = Color(0xFFD4C06A)
 private val GoldDim    = Color(0xFFB89B4E)
 private val CardBg1    = Color(0xFF175C45)
@@ -123,7 +123,11 @@ fun AzkarDetailsScreen(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(BgTop, BgMid, BgBot),
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.background,
+                        ),
                     ),
                 ),
         ) {
@@ -157,18 +161,22 @@ private fun AzkarDetailsTopBar(title: String, onBack: () -> Unit) {
             .statusBarsPadding()
             .padding(horizontal = 8.dp, vertical = 8.dp),
     ) {
-        IconButton(
+        LiquidGlassCard(
             onClick = onBack,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .size(44.dp)
-                .clip(RoundedCornerShape(50))
-                .background(Color.White.copy(alpha = 0.08f)),
+                .size(44.dp),
+            cornerRadius = 999.dp,
+            refraction = 0.35f,
+            frost = 4f,
+            dispersion = 0.1f,
+            glowAlpha = 0.25f,
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "رجوع",
                 tint = GoldAccent,
+                modifier = Modifier.size(22.dp),
             )
         }
 
@@ -190,6 +198,7 @@ private fun AzkarDetailsTopBar(title: String, onBack: () -> Unit) {
 @Composable
 private fun AzkarItemsList(items: List<ZikrItem>) {
     LazyColumn(
+        modifier = Modifier.navigationBarsPadding(),
         contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -203,11 +212,7 @@ private fun AzkarItemsList(items: List<ZikrItem>) {
 // ─── Animated Zikr Card ──────────────────────────────────────────────────────
 @Composable
 private fun AnimatedZikrCard(index: Int, item: ZikrItem) {
-    var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(index * 60L)
-        visible = true
-    }
+    var visible by remember { mutableStateOf(true) }
 
     AnimatedVisibility(
         visible = visible,
@@ -233,6 +238,8 @@ private fun ZikrCard(item: ZikrItem) {
         animationSpec = tween(400),
         label = "card_alpha",
     )
+
+    val cardShape = RoundedCornerShape(18.dp)
 
     Column(
         modifier = Modifier
@@ -327,35 +334,36 @@ private fun CounterBubble(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(42.dp)
-            .scale(scale)
-            .clip(CircleShape)
-            .background(
-                if (done) Color(0xFF2FA084).copy(alpha = 0.8f)
-                else GoldDim.copy(alpha = 0.20f),
-            )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
+            .scale(scale),
     ) {
-        AnimatedContent(
-            targetState = if (done) "✓" else remaining.toString(),
-            transitionSpec = {
-                fadeIn(tween(180)) togetherWith fadeOut(tween(120))
-            },
-            label = "count_anim",
-        ) { value ->
-            Text(
-                text = value,
-                style = TextStyle(
-                    fontFamily = AmiriFont,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (done) Color.White else GoldAccent,
-                ),
-                textAlign = TextAlign.Center,
-            )
+        LiquidGlassCard(
+            onClick = onClick,
+            modifier = Modifier.size(42.dp),
+            cornerRadius = 999.dp,
+            refraction = 0.25f,
+            frost = 3f,
+            dispersion = 0.08f,
+            glowAlpha = if (done) 0.5f else 0.2f,
+            tintColor = if (done) Color(0xFF2FA084) else Color.White,
+        ) {
+            AnimatedContent(
+                targetState = if (done) "✓" else remaining.toString(),
+                transitionSpec = {
+                    fadeIn(tween(180)) togetherWith fadeOut(tween(120))
+                },
+                label = "count_anim",
+            ) { value ->
+                Text(
+                    text = value,
+                    style = TextStyle(
+                        fontFamily = AmiriFont,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (done) Color.White else GoldAccent,
+                    ),
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }
@@ -363,29 +371,36 @@ private fun CounterBubble(
 // ─── Copy Button ─────────────────────────────────────────────────────────────
 @Composable
 private fun CopyButton(text: String, context: Context, modifier: Modifier = Modifier) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(GoldDim.copy(alpha = 0.18f))
-            .clickable { copyToClipboard(context, text) }
-            .padding(horizontal = 10.dp, vertical = 5.dp),
+    LiquidGlassCard(
+        onClick = { copyToClipboard(context, text) },
+        modifier = modifier.height(32.dp).defaultMinSize(minWidth = 48.dp),
+        cornerRadius = 10.dp,
+        refraction = 0.25f,
+        frost = 3f,
+        dispersion = 0.08f,
+        glowAlpha = 0.2f,
+        tintColor = Color.White,
     ) {
-        Icon(
-            imageVector = Icons.Outlined.ContentCopy,
-            contentDescription = "نسخ",
-            tint = GoldAccent,
-            modifier = Modifier.size(14.dp),
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = "نسخ",
-            style = TextStyle(
-                fontFamily = AmiriFont,
-                fontSize = 12.sp,
-                color = GoldAccent,
-            ),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ContentCopy,
+                contentDescription = "نسخ",
+                tint = GoldAccent,
+                modifier = Modifier.size(14.dp),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "نسخ",
+                style = TextStyle(
+                    fontFamily = AmiriFont,
+                    fontSize = 12.sp,
+                    color = GoldAccent,
+                ),
+            )
+        }
     }
 }
 

@@ -1,14 +1,9 @@
 package com.almahmoudApp.al_mahmoudapp.core.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,20 +18,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -47,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.navigation.AppDestination
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 
@@ -65,6 +59,12 @@ sealed class BottomBarTab(
         route = AppDestination.Quran.route,
         titleRes = R.string.nav_quran,
         icon = Icons.AutoMirrored.Rounded.MenuBook,
+    )
+
+    data object Status : BottomBarTab(
+        route = AppDestination.Status.route,
+        titleRes = R.string.nav_status,
+        icon = Icons.Outlined.CollectionsBookmark,
     )
 
     data object Settings : BottomBarTab(
@@ -97,14 +97,11 @@ fun AppBottomBar(
     modifier: Modifier = Modifier,
 ) {
     val tabs = remember {
-        listOf(BottomBarTab.Home, BottomBarTab.Quran, BottomBarTab.Settings)
+        listOf(BottomBarTab.Home, BottomBarTab.Quran, BottomBarTab.Status, BottomBarTab.Settings)
     }
 
-    val selectedIndex by remember(currentRoute) {
-        derivedStateOf {
-            tabs.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
-        }
-    }
+    val selectedIndex = tabs.indexOfFirst { it.route == currentRoute }
+    val backgroundColor = MaterialTheme.colorScheme.surface
 
     Box(
         modifier = modifier
@@ -113,7 +110,10 @@ fun AppBottomBar(
             .padding(horizontal = 24.dp, vertical = 12.dp)
             .height(72.dp)
             .clip(RoundedCornerShape(24.dp))
-            .hazeChild(state = hazeState)
+            .hazeChild(state = hazeState) {
+                this.backgroundColor = backgroundColor
+                alpha = 0.85f
+            }
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
@@ -121,16 +121,6 @@ fun AppBottomBar(
                         MaterialTheme.colorScheme.surface.copy(alpha = 0.80f)
                     )
                 )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.25f),
-                        Color.White.copy(alpha = 0.05f)
-                    )
-                ),
-                shape = RoundedCornerShape(24.dp)
             )
     ) {
         Row(
@@ -141,26 +131,10 @@ fun AppBottomBar(
             tabs.forEachIndexed { index, tab ->
                 val selected = index == selectedIndex
 
-                // Color and scale animations for icons and labels
                 val animatedColor by animateColorAsState(
-                    targetValue = if (selected) MaterialTheme.colorScheme.primary 
+                    targetValue = if (selected) MaterialTheme.colorScheme.primary
                                   else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     label = "tabColor"
-                )
-
-                val iconScale by animateFloatAsState(
-                    targetValue = if (selected) 1.2f else 1.0f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    label = "iconScale"
-                )
-
-                val glowAlpha by animateFloatAsState(
-                    targetValue = if (selected) 1.0f else 0.0f,
-                    animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
-                    label = "glowAlpha"
                 )
 
                 val labelSize by animateFloatAsState(
@@ -168,44 +142,37 @@ fun AppBottomBar(
                     label = "labelTextSize"
                 )
 
-                Box(
+                LiquidGlassCard(
+                    onClick = { onNavigate(tab.route) },
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = { onNavigate(tab.route) }
-                        ),
-                    contentAlignment = Alignment.Center
+                        .padding(3.dp),
+                    cornerRadius = 14.dp,
+                    refraction = 0.3f,
+                    frost = if (selected) 6f else 3f,
+                    dispersion = 0.1f,
+                    glowAlpha = if (selected) 0.7f else 0.15f,
+                    tintColor = animatedColor,
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.drawBehind {
-                            drawTabGlow(animatedColor, glowAlpha)
-                        }
                     ) {
                         Icon(
                             imageVector = tab.icon,
                             contentDescription = stringResource(tab.titleRes),
                             tint = animatedColor,
-                            modifier = Modifier
-                                .size(26.dp)
-                                .scale(iconScale)
+                            modifier = Modifier.size(24.dp),
                         )
-                        Box(
-                            modifier = Modifier.height(18.dp),
-                            contentAlignment = Alignment.BottomCenter
-                        ) {
-                            Text(
-                                text = stringResource(tab.titleRes),
-                                color = animatedColor,
-                                fontSize = labelSize.sp,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                                letterSpacing = 0.1.sp
-                            )
-                        }
+                        Text(
+                            text = stringResource(tab.titleRes),
+                            color = animatedColor,
+                            fontSize = labelSize.sp,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                            letterSpacing = 0.1.sp,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
                     }
                 }
             }

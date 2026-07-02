@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import com.almahmoudApp.al_mahmoudapp.core.util.NumberLocalization
 
@@ -105,6 +106,7 @@ fun PrayerAyahLine(
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Medium,
                 fontFamily = AmiriFont,
+                textDirection = TextDirection.Rtl,
             ),
             color = Color.White,
             textAlign = TextAlign.Center,

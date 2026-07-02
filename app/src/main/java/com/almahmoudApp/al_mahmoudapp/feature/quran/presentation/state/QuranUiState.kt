@@ -17,4 +17,7 @@ data class QuranUiState(
     val content: QuranContent? = null,
     val filteredSurahs: List<QuranSurah> = emptyList(),
     val filteredReaders: List<QuranReader> = emptyList(),
+    val lastReadPage: Int = 1,
+    val lastReadSurah: Int = 1,
+    val lastReadSurahName: String = "",
 )

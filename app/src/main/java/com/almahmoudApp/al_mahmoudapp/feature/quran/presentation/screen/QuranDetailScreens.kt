@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
@@ -74,6 +76,7 @@ fun QuranActionRoute(
     Surface(
         modifier = modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .haze(state = hazeState),
         color = MaterialTheme.colorScheme.background,
     ) {
@@ -82,7 +85,8 @@ fun QuranActionRoute(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .navigationBarsPadding(),
             ) {
                 QuranTopBar(title = surahName.ifBlank { stringResource(R.string.quran_title) }, onBack = onBack)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -150,6 +154,7 @@ fun QuranReadersRoute(
     Surface(
         modifier = modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .haze(state = hazeState),
         color = MaterialTheme.colorScheme.background,
     ) {
@@ -161,7 +166,8 @@ fun QuranReadersRoute(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .navigationBarsPadding(),
             ) {
                 QuranTopBar(title = surahName.ifBlank { stringResource(R.string.quran_audio) }, onBack = onBack)
                 Spacer(modifier = Modifier.height(12.dp))

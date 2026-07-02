@@ -17,23 +17,37 @@ class TasbeehViewModel @Inject constructor() : ViewModel() {
     val state: StateFlow<TasbeehUiState> = _state.asStateFlow()
 
     fun incrementCount() {
-        if (_state.value.count >= TasbeehDhikr.MaxCount) return
+        val currentState = _state.value
+        val target = if (currentState.isCustom) currentState.customTarget else TasbeehDhikr.MaxCount
+        if (currentState.count >= target) return
 
-        _state.update { currentState ->
-            val newCount = currentState.count + 1
-            val isFinished = newCount >= TasbeehDhikr.MaxCount
-            
-            // Determine Dhikr based on count
-            val dhikrIndex = (newCount / TasbeehDhikr.MilestoneStep).coerceAtMost(TasbeehDhikr.milestones.lastIndex)
-            val dhikr = TasbeehDhikr.milestones[dhikrIndex]
+        _state.update {
+            val newCount = it.count + 1
+            val isFinished = newCount >= target
 
-            currentState.copy(
+            val newDhikr = if (it.isCustom) {
+                it.currentDhikr
+            } else {
+                val dhikrIndex = (newCount / TasbeehDhikr.MilestoneStep)
+                    .coerceAtMost(TasbeehDhikr.milestones.lastIndex)
+                TasbeehDhikr.milestones[dhikrIndex]
+            }
+
+            it.copy(
                 count = newCount,
-                currentDhikr = dhikr,
+                currentDhikr = newDhikr,
                 isFinished = isFinished,
                 congratulationMessage = if (isFinished) "لقد قمت بإنجاز هائل" else ""
             )
         }
+    }
+
+    fun setCustomDhikr(dhikr: String, target: Int) {
+        _state.value = TasbeehUiState(
+            currentDhikr = dhikr,
+            customTarget = target,
+            isCustom = true,
+        )
     }
 
     fun resetCount() {

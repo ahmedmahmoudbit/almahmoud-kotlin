@@ -19,6 +19,8 @@
     <string name="home_feature_apps">Apps</string>
     <string name="home_feature_suggestions">Suggestions</string>
     <string name="home_feature_cards">Cards</string>
+    <string name="home_feature_recordings">Recordings</string>
+    <string name="recordings_title">Recordings</string>
     <string name="quran_title">Holy Quran</string>
     <string name="quran_subtitle">Browse the surahs or reciters in the same clean style as the classic app.</string>
     <string name="quran_tab_text">Text</string>
@@ -73,6 +75,7 @@
     <string name="onboarding_body_simple_access">The app keeps access easy, including prayer times by country and city so your daily worship tools stay nearby.</string>
     <string name="nav_home">Home</string>
     <string name="nav_quran">Quran</string>
+    <string name="nav_status">Status</string>
     <string name="nav_settings">Settings</string>
     <string name="ayat_topic_dolm_title">Injustice</string>
     <string name="ayat_topic_dolm_desc">Verses about injustice, whether against yourself or others</string>
@@ -123,4 +126,14 @@
     <string name="prayer_remaining">Remaining</string>
     <string name="tamilat_title">Reflections</string>
     <string name="tamilat_copy_hint">Click below to copy reflection</string>
+    <string name="settings_general_options">General Options</string>
+    <string name="settings_notifications">Notifications &amp; Alerts</string>
+    <string name="settings_app_language">App Language</string>
+    <string name="settings_about">About</string>
+    <string name="settings_app_version">App Version</string>
+    <string name="settings_version_value">1.0.0 (Beta)</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_app_theme">App Theme</string>
 </resources>

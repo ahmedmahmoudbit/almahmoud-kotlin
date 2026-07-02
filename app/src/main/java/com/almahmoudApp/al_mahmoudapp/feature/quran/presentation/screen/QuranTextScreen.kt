@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -154,11 +156,12 @@ fun QuranTextScreen(
     Surface(
         modifier = modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .haze(state = hazeState),
         color = MaterialTheme.colorScheme.background,
     ) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
                 when {
                     state.isLoading -> QuranLoading()
                     state.errorMessage != null -> QuranError(

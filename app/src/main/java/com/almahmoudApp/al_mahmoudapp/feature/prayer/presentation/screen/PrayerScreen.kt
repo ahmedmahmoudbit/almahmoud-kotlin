@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -51,10 +53,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -164,7 +169,7 @@ fun PrayerScreen(
         modifier = modifier
             .fillMaxSize()
             .haze(state = hazeState),
-        color = MaterialTheme.colorScheme.background,
+        color = Color.Black,
     ) {
         LiquidHost(modifier = Modifier.fillMaxSize()) {
             PrayerBackground()
@@ -208,9 +213,9 @@ private fun PrayerBackground() {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.background,
+                        Color.Black,
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f),
-                        MaterialTheme.colorScheme.background,
+                        Color.Black,
                     ),
                 ),
             ),
@@ -228,48 +233,62 @@ private fun PrayerContent(
     onClearError: () -> Unit,
 ) {
     val dashboard = state.dashboard ?: return
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .padding(horizontal = 18.dp)
-            .navigationBarsPadding()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Spacer(modifier = Modifier.height(4.dp))
-
-        PrayerTopBar(
-            location = dashboard.location,
-            isRefreshing = state.isRefreshing,
-            onBack = onBack,
-            onCurrentLocationClick = onCurrentLocationClick,
-            onManualLocationClick = onManualLocationClick,
-            onRefreshClick = onRefreshClick,
+        Image(
+            painter = painterResource(id = R.drawable.b5),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .matchParentSize()
+                .alpha(0.6f),
         )
 
-        AnimatedVisibility(visible = state.errorMessage != null) {
-            ErrorBanner(
-                message = state.errorMessage.orEmpty(),
-                onDismiss = onClearError,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(contentPadding)
+                .padding(horizontal = 18.dp)
+                .navigationBarsPadding()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Spacer(modifier = Modifier.height(4.dp))
+
+            PrayerTopBar(
+                location = dashboard.location,
+                isRefreshing = state.isRefreshing,
+                onBack = onBack,
+                onCurrentLocationClick = onCurrentLocationClick,
+                onManualLocationClick = onManualLocationClick,
+                onRefreshClick = onRefreshClick,
             )
+
+            AnimatedVisibility(visible = state.errorMessage != null) {
+                ErrorBanner(
+                    message = state.errorMessage.orEmpty(),
+                    onDismiss = onClearError,
+                )
+            }
+
+            PrayerDateHeader(
+                dayName = state.dayName,
+                hijriDate = state.hijriDate,
+                gregorianDate = state.gregorianDate,
+                currentTime = state.currentTime,
+            )
+
+            PrayerAyahLine(ayah = state.currentAyah)
+
+            PrayerTimesSection(day = dashboard.today)
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
-
-        PrayerDateHeader(
-            dayName = state.dayName,
-            hijriDate = state.hijriDate,
-            gregorianDate = state.gregorianDate,
-            currentTime = state.currentTime,
-        )
-
-        PrayerAyahLine(ayah = state.currentAyah)
-
-        PrayerTimesSection(day = dashboard.today)
-
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
-
 @Composable
 private fun PrayerTopBar(
     location: PrayerLocation,

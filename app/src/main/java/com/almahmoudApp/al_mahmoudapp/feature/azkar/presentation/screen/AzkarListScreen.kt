@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,9 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,15 +64,15 @@ private val AzkarGoldDim  = Color(0xFFB89B4E)
 private val AzkarGoldGlow = Color(0xFFD4C06A)
 private val AzkarWhite    = Color(0xFFF0F6EC)
 
-// ─── Category card gradient pairs ───────────────────────────────────────────
-private val categoryGradients = listOf(
-    listOf(Color(0xFF1B4D2E), Color(0xFF0D2818)),
-    listOf(Color(0xFF1A2B4A), Color(0xFF0D1A2E)),
-    listOf(Color(0xFF2A1A3A), Color(0xFF170D22)),
-    listOf(Color(0xFF2E2012), Color(0xFF1E1508)),
-    listOf(Color(0xFF1E3020), Color(0xFF0E1C10)),
-    listOf(Color(0xFF3A1A1A), Color(0xFF220E0E)),
-    listOf(Color(0xFF1A2A3A), Color(0xFF0E1820)),
+// ─── Category card border colors ───────────────────────────────────────────
+private val categoryBorderColors = listOf(
+    Color(0xFF4CAF50),
+    Color(0xFF2196F3),  // أزرق
+    Color(0xFF9C27B0),  // بنفسجي
+    Color(0xFFFF9800),  // برتقالي
+    Color(0xFF00BCD4),  // سماوي
+    Color(0xFFE91E63),  // وردي
+    Color(0xFF3F51B5),  // نيلي
 )
 
 private val categoryEmojis = listOf("🌅", "🌙", "🤲", "🏠", "🚿", "🕊️", "😴")
@@ -108,7 +109,11 @@ fun AzkarListScreen(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(AzkarBgTop, AzkarBgMid, AzkarBgBot),
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.background,
+                        ),
                     ),
                 ),
         ) {
@@ -131,7 +136,7 @@ fun AzkarListScreen(
                             index = index,
                             category = category,
                             emoji = categoryEmojis.getOrElse(index) { "📿" },
-                            gradient = categoryGradients[index % categoryGradients.size],
+                            borderColor = categoryBorderColors[index % categoryBorderColors.size],
                             onClick = { onCategorySelected(category) },
                         )
                     }
@@ -150,23 +155,25 @@ private fun AzkarTopBar(onBack: () -> Unit) {
             .statusBarsPadding()
             .padding(horizontal = 8.dp, vertical = 8.dp),
     ) {
-        // Back button
-        IconButton(
+        LiquidGlassCard(
             onClick = onBack,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .size(44.dp)
-                .clip(RoundedCornerShape(50))
-                .background(Color.White.copy(alpha = 0.08f)),
+                .size(44.dp),
+            cornerRadius = 999.dp,
+            refraction = 0.35f,
+            frost = 4f,
+            dispersion = 0.1f,
+            glowAlpha = 0.25f,
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "رجوع",
                 tint = AzkarGoldGlow,
+                modifier = Modifier.size(22.dp),
             )
         }
 
-        // Title
         Text(
             text = "الأذكار",
             style = TextStyle(
@@ -187,7 +194,7 @@ private fun AnimatedCategoryCard(
     index: Int,
     category: AzkarCategory,
     emoji: String,
-    gradient: List<Color>,
+    borderColor: Color,
     onClick: () -> Unit,
 ) {
     var visible by remember { mutableStateOf(false) }
@@ -206,7 +213,7 @@ private fun AnimatedCategoryCard(
         CategoryCard(
             category = category,
             emoji = emoji,
-            gradient = gradient,
+            borderColor = borderColor,
             onClick = onClick,
         )
     }
@@ -216,7 +223,7 @@ private fun AnimatedCategoryCard(
 private fun CategoryCard(
     category: AzkarCategory,
     emoji: String,
-    gradient: List<Color>,
+    borderColor: Color,
     onClick: () -> Unit,
 ) {
     var pressed by remember { mutableStateOf(false) }
@@ -226,32 +233,20 @@ private fun CategoryCard(
         label = "card_scale",
     )
 
+    val shape = RoundedCornerShape(20.dp)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.linearGradient(
-                    colors = gradient,
-                    start = Offset(0f, 0f),
-                    end = Offset(600f, 250f),
-                ),
-            )
+            .clip(shape)
+            .background(borderColor.copy(alpha = 0.20f), shape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
             ),
     ) {
-        // Inner border glow
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color.White.copy(alpha = 0.04f)),
-        )
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -263,7 +258,7 @@ private fun CategoryCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = null,
-                tint = AzkarGoldDim.copy(alpha = 0.55f),
+                tint = borderColor.copy(alpha = 0.55f),
                 modifier = Modifier.size(24.dp),
             )
 
@@ -274,7 +269,7 @@ private fun CategoryCard(
                     fontFamily = AmiriFont,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = AzkarWhite,
+                    color = borderColor,
                 ),
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f),

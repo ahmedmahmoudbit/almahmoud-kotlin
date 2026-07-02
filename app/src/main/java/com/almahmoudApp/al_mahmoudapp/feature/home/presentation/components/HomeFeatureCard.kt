@@ -3,7 +3,9 @@ package com.almahmoudApp.al_mahmoudapp.feature.home.presentation.components
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.Collections
+import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FormatQuote
 import androidx.compose.material.icons.outlined.Image
@@ -48,7 +51,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.almahmoudApp.al_mahmoudapp.R
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeature
 import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
 
@@ -67,15 +69,14 @@ fun HomeFeatureCard(
     modifier: Modifier = Modifier,
 ) {
     val imageRes = feature.key.featureImage()
+    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+    val shape = RoundedCornerShape(24.dp)
 
-    LiquidGlassCard(
-        onClick = onClick,
-        modifier = modifier,
-        cornerRadius = 24.dp,
-        refraction = 0.55f,
-        frost = 8f,
-        dispersion = 0.35f,
-        glowAlpha = 0.55f,
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(backgroundColor)
+            .clickable(onClick = onClick),
     ) {
         if (imageRes != null) {
             FeatureImageContent(imageRes = imageRes, feature = feature)
@@ -93,11 +94,8 @@ private fun FeatureImageContent(
     @DrawableRes imageRes: Int,
     feature: HomeFeature,
 ) {
-    // The scrim fades from transparent at the top to the themed overlay color at the bottom so the
-    // title stays readable on both light and dark themes.
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val scrimColor = if (isDark) Color.Black else Color.White
-    val titleColor = if (isDark) Color.White else Color.Black
+    val scrimColor = MaterialTheme.colorScheme.surface
+    val titleColor = MaterialTheme.colorScheme.onSurface
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -107,7 +105,6 @@ private fun FeatureImageContent(
             modifier = Modifier.fillMaxSize(),
         )
 
-        // Bottom fade for the label readability.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -141,39 +138,56 @@ private fun FeatureImageContent(
     }
 }
 
-/**
- * Fallback icon-based layout (current design) used when no image is configured.
- */
 @Composable
 private fun FeatureIconContent(feature: HomeFeature) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(12.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            imageVector = feature.key.icon(),
-            contentDescription = null,
-            modifier = Modifier.size(28.dp),
-            tint = Color.White,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(feature.key.titleRes()),
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White,
-                shadow = Shadow(
-                    color = Color.Black.copy(alpha = 0.25f),
-                    offset = Offset(0f, 1f),
-                    blurRadius = 3f,
+    val scrimColor = MaterialTheme.colorScheme.surface
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                imageVector = feature.key.icon(),
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+                tint = Color.White,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(feature.key.titleRes()),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    shadow = Shadow(
+                        color = Color.Black.copy(alpha = 0.25f),
+                        offset = Offset(0f, 1f),
+                        blurRadius = 3f,
+                    ),
                 ),
-            ),
-            maxLines = 2,
-            textAlign = TextAlign.Center,
-            overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+                textAlign = TextAlign.Center,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            scrimColor.copy(alpha = 0.70f),
+                            scrimColor,
+                        ),
+                    ),
+                ),
         )
     }
 }
@@ -193,6 +207,7 @@ private fun HomeFeatureKey.titleRes(): Int = when (this) {
     HomeFeatureKey.APPS -> R.string.home_feature_apps
     HomeFeatureKey.SUGGESTIONS -> R.string.home_feature_suggestions
     HomeFeatureKey.CARDS -> R.string.home_feature_cards
+    HomeFeatureKey.RECORDINGS -> R.string.home_feature_recordings
 }
 
 private fun HomeFeatureKey.icon(): ImageVector = when (this) {
@@ -210,12 +225,9 @@ private fun HomeFeatureKey.icon(): ImageVector = when (this) {
     HomeFeatureKey.APPS -> Icons.Outlined.Apps
     HomeFeatureKey.SUGGESTIONS -> Icons.Outlined.Lightbulb
     HomeFeatureKey.CARDS -> Icons.Outlined.CardGiftcard
+    HomeFeatureKey.RECORDINGS -> Icons.Outlined.PlayCircle
 }
 
-/**
- * Returns the drawable resource id for a feature's background image, or null to fall back to the
- * icon. Cards 1–11 map to the first sections; remaining sections fall back to their icon.
- */
 @DrawableRes
 private fun HomeFeatureKey.featureImage(): Int? = when (this) {
     HomeFeatureKey.SOUND -> R.drawable.card1
@@ -229,7 +241,8 @@ private fun HomeFeatureKey.featureImage(): Int? = when (this) {
     HomeFeatureKey.AZKAR -> R.drawable.card9
     HomeFeatureKey.TASBEEH -> R.drawable.card10
     HomeFeatureKey.STATUS -> R.drawable.card11
-    HomeFeatureKey.APPS -> null
-    HomeFeatureKey.SUGGESTIONS -> null
-    HomeFeatureKey.CARDS -> null
+    HomeFeatureKey.APPS -> R.drawable.card12
+    HomeFeatureKey.SUGGESTIONS -> R.drawable.card13
+    HomeFeatureKey.CARDS -> R.drawable.card14
+    HomeFeatureKey.RECORDINGS -> R.drawable.card15
 }

@@ -1,138 +1,20 @@
 package com.almahmoudApp.al_mahmoudapp.feature.images.data.datasource
 
+import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class ImagesLocalDataSource @Inject constructor() {
+class ImagesLocalDataSource @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
-    fun getIslamicImagesUrls(): List<String> {
-        return listOf(
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage.jpg?alt=media&token=9a1a7de2-484c-4c95-aa4d-c485ae231b85",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage2.jpg?alt=media&token=a316c626-59ad-4869-bf42-c5ec7e9cc753",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage1.jpg?alt=media&token=a2eaa5bc-1a31-451a-a31f-ed4496da5863",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage10.jpg?alt=media&token=75b5eb49-bded-4fba-83cf-54c5885ad9c9",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage3.jpg?alt=media&token=4a89661a-57db-4b43-b15b-169bc1cf3439",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage12.jpg?alt=media&token=27b42d84-14ea-433f-9bea-590422b304d6",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage13.jpg?alt=media&token=b01f7a63-16e3-4322-bb84-ecf1e2ef096b",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage14.jpg?alt=media&token=aec55f74-dbec-48dc-8e0f-2e4222fb1f1e",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage15.jpg?alt=media&token=b5e9ccea-ca96-4a5a-a3f4-b95f60cd68b0",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage16.jpg?alt=media&token=19dacaba-0d05-4b15-a796-8199b444692f",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage17.jpg?alt=media&token=87e45e5e-565d-4589-945a-356eca4dd8c5",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage18.jpg?alt=media&token=062bff67-21c7-463f-bf04-9d38247b4985",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage19.jpg?alt=media&token=d775b4cb-2682-4ccb-8d69-c34f6a7881e7",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage20.jpg?alt=media&token=397e2c37-b395-45cd-8820-e276f3bf3322",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage21.jpg?alt=media&token=0843f205-9b9f-4057-82a0-2e59c26e35dc",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage22.jpg?alt=media&token=cc65e149-8342-426d-82a1-c3ab6d48c296",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage23.jpg?alt=media&token=a2f8a0f2-8e92-4d50-905f-9afefe95d31f",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage24.jpg?alt=media&token=578069dd-a5b3-45bc-b029-d914a3017d8a",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage25.jpg?alt=media&token=e76e4a3b-314f-4d94-a500-ce28a9215197",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage26.jpg?alt=media&token=8f9e36b6-7a73-4671-8429-1df1761cdf8c",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage27.jpg?alt=media&token=de64e58c-e8d0-4dc4-b494-f7be823df750",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage28.jpg?alt=media&token=b4650b0e-0b4c-4197-ba89-745d23a7d142",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage29.jpg?alt=media&token=cde672f4-3e80-4ecf-86cc-fcd884dbb2fe",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage30.jpg?alt=media&token=c9b562fa-36d1-4283-90ab-858cfcc8300f",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage31.jpg?alt=media&token=f8c0c97c-197d-4857-9622-f27defb9b485",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage32.jpg?alt=media&token=e04525b8-3335-4cd4-9c88-6b368a472e93",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage33.jpg?alt=media&token=1e868cc3-119c-435a-bd04-9bfe0306b1c6",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage34.jpg?alt=media&token=be7555fe-5237-4697-b6ad-d82a717ccc0d",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage35.jpg?alt=media&token=db1da0e4-f2a4-4f4a-8c00-25b9303a1e55",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage36.jpg?alt=media&token=c7a21fca-6097-4dcd-8ab9-948a09d77d88",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage37.jpg?alt=media&token=0e5407ab-b7cb-4791-8010-492390f90ab7",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage38.jpg?alt=media&token=185c16d2-abf7-49c4-99e0-3dce10c97c5d",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage39.jpg?alt=media&token=d5d91897-3c8c-4fd9-9211-22ae3fd7f412",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage4.jpg?alt=media&token=4ff40ec4-749a-476a-8051-7a7dfc16dcb0",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage40.jpg?alt=media&token=0228b7e1-9519-401e-9ed0-1678981be519",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage41.jpg?alt=media&token=464aab52-e054-4851-bd98-f9fcb197a1be",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage42.jpg?alt=media&token=b83b2721-50b8-48b5-8dd2-8e8dc8d49ecc",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage43.jpg?alt=media&token=b057df82-4f74-4f43-94b1-c57bacd26eae",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage5.jpg?alt=media&token=f2c3b4c8-a599-4bc6-822b-103a78a4fdb3",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage6.jpg?alt=media&token=736aefb7-b9f1-47fa-a058-e1ff50813545",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage7.jpg?alt=media&token=1d6f4c3e-ee7c-4ad4-b700-2f02023f6dcc",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage8.jpg?alt=media&token=d8704788-8a12-4be7-88a3-f18ed0557c45",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/images_islamic%2Fimage9.jpg?alt=media&token=82b551f6-675c-4802-bb3c-864a67c7ebd2",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/photos%2Fm1.jpg?alt=media&token=ca338825-c044-451c-9c58-787f7e6c16b3",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/photos%2Fm2.jpg?alt=media&token=150f206f-0941-41cf-8b51-6c4b4c703dd4",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/photos%2Fm3.jpg?alt=media&token=430c3909-bbf1-489e-976d-6ef3ce7cd619",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/photos%2Fm4.jpg?alt=media&token=6b4c3efb-fa75-4d8a-99c5-33cdec117b37",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/photos%2Fm5.png?alt=media&token=c9bb976f-d201-41f0-b08d-a16b8bdca9a6",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/photos%2Fm6.png?alt=media&token=10b20ff2-98cf-4b76-986d-bc04e91db24e",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/photos%2Fm7.jpg?alt=media&token=323431e3-11b2-48d4-a773-0be704dc048c"
-        )
-    }
-
-    fun getWallpaperBackgroundsUrls(): List<String> {
-        return listOf(
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F1.jpg?alt=media&token=a1450828-bbbc-420b-8c73-cde16a6d2b88",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F10.jpg?alt=media&token=6992061c-a034-49aa-bfbe-dc4d1d6d2cf2",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F11.jpg?alt=media&token=448f1a35-0add-49b6-903e-c557fb820bed",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F12.jpg?alt=media&token=d396d054-6b9b-436d-9989-9d2947cc26a8",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F13.jpg?alt=media&token=023ac730-a4fb-4f1e-9bd1-d23d17bfdd74",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F14.jpg?alt=media&token=c6f81c00-0325-4bd5-8f8a-def13e58b94e",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F15.jpg?alt=media&token=01a7dba7-22bc-4872-aece-246b477ee739",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F16.jpg?alt=media&token=8b6ac148-7d02-4a6e-9c64-6801cef197a4",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F17.jpg?alt=media&token=707fcd7f-4203-4cdf-9536-20d82354fd92",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F18.jpg?alt=media&token=128073b3-7ab7-4329-92f0-cdc08b060ba5",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F19.jpg?alt=media&token=9d89d210-be16-4957-846e-3edf78021122",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F2.jpg?alt=media&token=6629e234-d360-4dce-a961-9514215b8f58",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F20.jpg?alt=media&token=7dff29be-34ee-42c6-98c0-1c1d940f1122",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F21.jpg?alt=media&token=3be7530a-fcaf-4d0a-a085-611e06a3e3dd",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F22.jpg?alt=media&token=17f890bf-0f53-4606-8e52-87589b319642",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F23.jpg?alt=media&token=74eeb66c-c305-4bb3-b4df-cbee1ba7f27a",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F24.jpg?alt=media&token=920c53bb-945b-4e26-af1e-3edfa316604d",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F25.jpg?alt=media&token=e5feb953-de92-4d46-bd21-0b9840e5a7a3",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F26.jpg?alt=media&token=0b144c97-af8c-4973-ac61-c83b0e915332",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F27.jpg?alt=media&token=b783c608-68cc-4e05-b334-215422ce3829",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F28.jpg?alt=media&token=56756fb4-6dcc-4d04-afe3-70e1fa6ef5e3",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F29.jpg?alt=media&token=5fb9383b-cbe4-4b85-ae65-5d5e6c11bd85",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F3.jpg?alt=media&token=274f2d32-6503-40af-8c52-242378be1256",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F30.jpg?alt=media&token=4b1bd570-c302-484a-8aac-e96e221e5cac",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F31.jpg?alt=media&token=83f07bbc-2141-46c6-ba88-3c4104156474",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F32.jpg?alt=media&token=354f6c82-d52e-480e-a084-49c406790c79",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F33.jpg?alt=media&token=587f3702-91a5-46b8-b273-7a51c52e2c51",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F34.jpg?alt=media&token=4dd48eba-a5b5-40e1-81bc-35d605634ef7",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F35.jpg?alt=media&token=ed1f26b3-32ba-4c70-a96a-6f3830993300",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F36.jpg?alt=media&token=89eaecc6-710d-4744-993f-0fae475565a5",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F37.jpg?alt=media&token=c385a60b-c2cf-4322-9083-ff7a39ff0adb",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F38.jpg?alt=media&token=7cba65e0-2395-4c4f-930e-6645d58c3159",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F39.jpg?alt=media&token=90d6e131-fcac-4a1d-99b9-c6da00c627b6",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F4.jpg?alt=media&token=9d12d618-724d-4b3f-af00-f19e3f144b07",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F40.jpg?alt=media&token=6187f501-173e-43f8-8bb2-0865a4e2a768",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F41.jpg?alt=media&token=ee2edaf7-1411-4069-863a-8660f479ee00",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F42.jpg?alt=media&token=14670e4f-9b38-40ea-a57f-253dd02e9ee0",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F43.jpg?alt=media&token=f49b5986-1372-445f-8793-7d9d45e5437c",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F44.jpg?alt=media&token=e3cac330-c9a9-443c-99b2-d758dfd8fa29",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F45.jpg?alt=media&token=0289a4fa-4dba-43ef-adc2-df65a3d1f51b",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F46.jpg?alt=media&token=b2571da9-3bd6-444b-8a5d-bd34d979ac0f",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F47.jpg?alt=media&token=9663fc85-583b-4eae-9bed-fe8d02040da8",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F48.jpg?alt=media&token=01d37bb3-4b77-4465-bb23-f6156bdc4f8e",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F49.jpg?alt=media&token=52b53122-7a3e-434f-b038-8629801f80b2",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F5.jpg?alt=media&token=3882b591-c39e-44d9-99d4-64121399ca12",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F50.jpg?alt=media&token=b1d76a90-4964-4e47-98a4-4aa5fae63398",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F51.jpg?alt=media&token=0e3e2f98-17ad-463b-bb42-d0faa5b07843",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F52.jpg?alt=media&token=7794829b-af65-4fe5-bbab-f109a19f9b6d",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F53.jpg?alt=media&token=8256a995-0dda-46c4-bf56-a86704aadf6a",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F54.jpg?alt=media&token=0d80e340-8ae9-443b-8c74-4acb89af5f0c",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F55.jpg?alt=media&token=60490b17-25fd-4ee5-bc6e-48df2f762bc0",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F56.jpg?alt=media&token=77859918-c822-4d18-83dd-7798f309745e",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F57.jpg?alt=media&token=fec9ba7a-c83c-4829-9daa-48b123da3e23",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F58.jpg?alt=media&token=0f225b88-69e9-4e27-9004-a50e712a67d4",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F59.jpg?alt=media&token=45d8a7e9-e67b-4f5c-b01e-685305d49def",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F6.jpg?alt=media&token=6d598dbd-2ef1-4212-90b7-1e83b2432f0b",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F60.jpg?alt=media&token=c0157ab7-f9c7-4b22-98b8-709dd45300f7",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F61.jpg?alt=media&token=e64a5508-3a07-43f1-a952-e8864e89378f",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F62.jpg?alt=media&token=738255b5-b92d-49f9-aa0d-6189a8f386a2",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F63.jpg?alt=media&token=b8cec725-b7ca-4a7f-9cd7-46a6583ae70b",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F64.jpg?alt=media&token=02ef7055-be5b-4acb-9eb7-5cd09a95b2a6",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F65.jpg?alt=media&token=494aff1e-e250-4cdb-8c07-c4797798bcb8",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F66.jpg?alt=media&token=aa72b107-1953-454c-8e5c-ef562c42282e",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F67.jpg?alt=media&token=b02b044f-33ff-4bc8-ab5d-04f8627bdd12",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F68.jpg?alt=media&token=475d1e85-8c3b-40a8-b1d8-b6b354fe014d",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F69.jpg?alt=media&token=5fa9ec9f-d066-43c9-a31d-32455170fd7c",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F7.jpg?alt=media&token=1c15c967-5646-4901-b034-6875b127af09",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F70.jpg?alt=media&token=b8fa172d-8791-4bcd-9965-474ded7f72f8",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F8.jpg?alt=media&token=e3a975a7-5d9f-4f72-b0ab-11f3f668e980",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F9.jpg?alt=media&token=3b14e09a-347b-4d75-ba9a-bcaadbd999b5",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F71.jpg?alt=media&token=10258903-7ad1-4736-aa79-e601f35b9170",
-            "https://firebasestorage.googleapis.com/v0/b/software-m.appspot.com/o/background%2F72.jpg?alt=media&token=b976832a-f715-44b3-9212-ffc1a19e6e84"
-        )
+    fun getWallpaperUrls(): List<String> {
+        val jsonString = context.assets.open("wallpaper.json")
+            .bufferedReader().use { it.readText() }
+        val type = object : TypeToken<Map<String, List<String>>>() {}.type
+        val map: Map<String, List<String>> = Gson().fromJson(jsonString, type)
+        return map["wallpaper"] ?: emptyList()
     }
 }

@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.core.edit
 import javax.inject.Inject
@@ -14,6 +15,18 @@ import kotlinx.coroutines.flow.map
 class AppPreferencesDataSource @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) {
+    val themeMode: Flow<String> = dataStore.data
+        .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
+        .map { preferences ->
+            preferences[Keys.THEME_MODE] ?: "SYSTEM"
+        }
+
+    suspend fun setThemeMode(mode: String) {
+        dataStore.edit { preferences ->
+            preferences[Keys.THEME_MODE] = mode
+        }
+    }
+
     val isOnboardingCompleted: Flow<Boolean> = dataStore.data
         .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
         .map { preferences ->
@@ -90,12 +103,65 @@ class AppPreferencesDataSource @Inject constructor(
         }
     }
 
+    val lastReadPage: Flow<Int> = dataStore.data
+        .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
+        .map { preferences ->
+            preferences[Keys.LAST_READ_PAGE] ?: 1
+        }
+
+    suspend fun setLastReadPage(page: Int) {
+        dataStore.edit { preferences ->
+            preferences[Keys.LAST_READ_PAGE] = page
+        }
+    }
+
+    val lastReadSurah: Flow<Int> = dataStore.data
+        .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
+        .map { preferences ->
+            preferences[Keys.LAST_READ_SURAH] ?: 1
+        }
+
+    suspend fun setLastReadSurah(surah: Int) {
+        dataStore.edit { preferences ->
+            preferences[Keys.LAST_READ_SURAH] = surah
+        }
+    }
+
+    val lastReadSurahName: Flow<String> = dataStore.data
+        .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
+        .map { preferences ->
+            preferences[Keys.LAST_READ_SURAH_NAME] ?: ""
+        }
+
+    suspend fun setLastReadSurahName(name: String) {
+        dataStore.edit { preferences ->
+            preferences[Keys.LAST_READ_SURAH_NAME] = name
+        }
+    }
+
+    val appLanguage: Flow<String> = dataStore.data
+        .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
+        .map { preferences ->
+            preferences[Keys.APP_LANGUAGE] ?: "ARABIC"
+        }
+
+    suspend fun setAppLanguage(language: String) {
+        dataStore.edit { preferences ->
+            preferences[Keys.APP_LANGUAGE] = language
+        }
+    }
+
     private object Keys {
+        val THEME_MODE = stringPreferencesKey("theme_mode")
         val IS_ONBOARDING_COMPLETED = booleanPreferencesKey("is_onboarding_completed")
         val FAVORITE_ANASHEED = stringSetPreferencesKey("favorite_anasheed")
         val FAVORITE_STORIES = stringSetPreferencesKey("favorite_stories")
         val FAVORITE_SURAHS = stringSetPreferencesKey("favorite_surahs")
         val QURAN_FONT_SIZE = intPreferencesKey("quran_font_size")
+        val LAST_READ_PAGE = intPreferencesKey("last_read_page")
+        val LAST_READ_SURAH = intPreferencesKey("last_read_surah")
+        val APP_LANGUAGE = stringPreferencesKey("app_language")
+        val LAST_READ_SURAH_NAME = stringPreferencesKey("last_read_surah_name")
     }
 
     companion object {

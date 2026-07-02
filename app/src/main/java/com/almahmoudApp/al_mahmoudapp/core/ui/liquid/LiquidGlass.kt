@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -72,10 +73,11 @@ fun LiquidGlassCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 24.dp,
-    refraction: Float = 0.55f,     // انكسار الضوء (0..1)
-    frost: Float = 6f,             // درجة الضبابية (0..20)
-    dispersion: Float = 0.4f,      // تشتت الألوان (0..1)
-    glowAlpha: Float = 0.55f,      // شدة وهج الحافة
+    refraction: Float = 0.55f,
+    frost: Float = 6f,
+    dispersion: Float = 0.4f,
+    glowAlpha: Float = 0.55f,
+    tintColor: Color = Color.White,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val shape = RoundedCornerShape(cornerRadius)
@@ -91,6 +93,7 @@ fun LiquidGlassCard(
             frost = frost,
             dispersion = dispersion,
             glowAlpha = glowAlpha,
+            tintColor = tintColor,
             content = content,
         )
     } else {
@@ -100,6 +103,7 @@ fun LiquidGlassCard(
             shape = shape,
             cornerRadius = cornerRadius,
             glowAlpha = glowAlpha,
+            tintColor = tintColor,
             content = content,
         )
     }
@@ -116,6 +120,7 @@ private fun LiquidGlassShader(
     frost: Float,
     dispersion: Float,
     glowAlpha: Float,
+    tintColor: Color,
     content: @Composable BoxScope.() -> Unit,
 ) {
     var cardSize by remember { mutableStateOf(IntSize.Zero) }
@@ -123,23 +128,31 @@ private fun LiquidGlassShader(
 
     Box(modifier = modifier.onSizeChanged { cardSize = it }) {
 
+        // ── مرساة الحجم: نسخة غير مرئية من المحتوى تُبلغ عن الحجم الطبيعي ──
+        Box(
+            modifier = Modifier
+                .wrapContentSize(Alignment.Center)
+                .alpha(0f),
+            contentAlignment = Alignment.Center,
+            content = content,
+        )
+
         // ── الطبقة الخلفية: Blur حقيقي للخلفية ──
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .clip(shape)
                 .graphicsLayer {
-                    // Blur للخلفية فقط
                     renderEffect = RenderEffect
                         .createBlurEffect(20f, 20f, Shader.TileMode.CLAMP)
                         .asComposeRenderEffect()
-                    alpha = 0.99f // يجبر compose على رسم layer منفصل
+                    alpha = 0.99f
                 }
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            Color.White.copy(alpha = 0.32f),
-                            Color.White.copy(alpha = 0.20f)
+                            tintColor.copy(alpha = 0.32f),
+                            tintColor.copy(alpha = 0.20f)
                         )
                     )
                 )
@@ -159,6 +172,7 @@ private fun LiquidGlassShader(
                         size = size,
                         cornerRadius = cornerRadius.toPx(),
                         glowAlpha = glowAlpha,
+                        tintColor = tintColor,
                     )
                 }
                 .clickable(onClick = onClick),
@@ -176,13 +190,13 @@ private fun LiquidGlassFallback(
     shape: RoundedCornerShape,
     cornerRadius: Dp,
     glowAlpha: Float,
+    tintColor: Color,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
         modifier = modifier
             .clip(shape)
             .graphicsLayer {
-                // Blur عبر RenderEffect (متاح من Android 12)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     renderEffect = RenderEffect
                         .createBlurEffect(18f, 18f, Shader.TileMode.CLAMP)
@@ -192,12 +206,11 @@ private fun LiquidGlassFallback(
             .drawWithContent {
                 drawContent()
 
-                // طبقة شفافة بيضاء (تعوض غياب الـ Shader)
                 drawRect(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.22f),
-                            Color.White.copy(alpha = 0.08f),
+                            tintColor.copy(alpha = 0.22f),
+                            tintColor.copy(alpha = 0.08f),
                         )
                     )
                 )
@@ -206,6 +219,7 @@ private fun LiquidGlassFallback(
                     size = size,
                     cornerRadius = cornerRadius.toPx(),
                     glowAlpha = glowAlpha,
+                    tintColor = tintColor,
                 )
             }
             .clickable(onClick = onClick),
@@ -222,19 +236,19 @@ private fun DrawScope.drawLiquidGlassOverlay(
     size: Size,
     cornerRadius: Float,
     glowAlpha: Float,
+    tintColor: Color = Color.White,
 ) {
     val strokeWidth = 1.2.dp.toPx()
     val halfStroke = strokeWidth / 2f
     val inset = halfStroke
 
-    // ── 1. الحافة الخارجية — بريق زجاجي ──
     drawRoundRect(
         brush = Brush.linearGradient(
             colors = listOf(
-                Color.White.copy(alpha = glowAlpha),
-                Color.White.copy(alpha = glowAlpha * 0.3f),
-                Color.White.copy(alpha = glowAlpha * 0.1f),
-                Color.White.copy(alpha = glowAlpha * 0.5f),
+                tintColor.copy(alpha = glowAlpha),
+                tintColor.copy(alpha = glowAlpha * 0.3f),
+                tintColor.copy(alpha = glowAlpha * 0.1f),
+                tintColor.copy(alpha = glowAlpha * 0.5f),
             ),
             start = Offset(0f, 0f),
             end   = Offset(size.width, size.height),
@@ -245,12 +259,11 @@ private fun DrawScope.drawLiquidGlassOverlay(
         style       = Stroke(width = strokeWidth),
     )
 
-    // ── 2. وهج أعلى البطاقة — يحاكي انعكاس الضوء ──
     drawRoundRect(
         brush = Brush.verticalGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.35f),
-                Color.White.copy(alpha = 0.0f),
+                tintColor.copy(alpha = 0.35f),
+                tintColor.copy(alpha = 0.0f),
             ),
             startY = 0f,
             endY   = size.height * 0.45f,
@@ -260,12 +273,11 @@ private fun DrawScope.drawLiquidGlassOverlay(
         cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius - inset * 2),
     )
 
-    // ── 3. بريق الزاوية العلوية اليسرى — نقطة انعكاس ──
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.5f),
-                Color.White.copy(alpha = 0.0f),
+                tintColor.copy(alpha = 0.5f),
+                tintColor.copy(alpha = 0.0f),
             ),
             center = Offset(size.width * 0.2f, size.height * 0.12f),
             radius = size.width * 0.28f,
@@ -274,7 +286,6 @@ private fun DrawScope.drawLiquidGlassOverlay(
         radius = size.width * 0.28f,
     )
 
-    // ── 4. ظل داخلي سفلي — يعطي العمق ──
     drawRoundRect(
         brush = Brush.verticalGradient(
             colors = listOf(

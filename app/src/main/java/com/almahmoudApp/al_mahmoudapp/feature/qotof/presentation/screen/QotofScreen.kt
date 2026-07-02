@@ -1,40 +1,40 @@
 package com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.screen
 
 import android.content.Intent
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.FormatQuote
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -43,6 +43,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,13 +54,16 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -69,6 +73,7 @@ import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import com.almahmoudApp.al_mahmoudapp.feature.qotof.domain.model.QotofItem
 import com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.viewmodel.QotofViewModel
@@ -76,7 +81,6 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import kotlinx.coroutines.delay
 import kotlin.math.abs
-import kotlin.random.Random
 
 @Composable
 fun QotofRoute(
@@ -103,7 +107,6 @@ fun QotofRoute(
                     contentPadding = contentPadding,
                     state = state,
                     onBack = onBack,
-                    onQueryChange = viewModel::onQueryChange,
                     onItemSelected = viewModel::onItemSelected,
                     onDismissItem = viewModel::dismissSelectedItem,
                 )
@@ -118,77 +121,70 @@ private fun QotofContent(
     contentPadding: PaddingValues,
     state: com.almahmoudApp.al_mahmoudapp.feature.qotof.presentation.state.QotofUiState,
     onBack: () -> Unit,
-    onQueryChange: (String) -> Unit,
     onItemSelected: (QotofItem) -> Unit,
     onDismissItem: () -> Unit,
 ) {
-    // Use partial-expand to 75% — but Material3 does not support fractional by default,
-    // so we wrap content in a fixed-height wrapContentHeight and let it size naturally.
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    var triggerParticles by remember { mutableStateOf(false) }
-
-    LaunchedEffect(state.selectedItem) {
-        triggerParticles = state.selectedItem != null
-    }
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(contentPadding)
-            .padding(vertical = 14.dp),
+            .padding(vertical = 14.dp)
+            .navigationBarsPadding(),
     ) {
-        // Top bar (back + title only — no search)
         QotofTopBar(
             onBack = onBack,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Stacked pager — fills available space
         Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            val pagerState = rememberPagerState(pageCount = { state.filteredItems.size })
+            val middlePage = state.filteredItems.size / 2
+            val pagerState = rememberPagerState(
+                initialPage = middlePage,
+                pageCount = { state.filteredItems.size },
+            )
 
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                // peek next card by leaving horizontal padding
-                contentPadding = PaddingValues(horizontal = 40.dp),
-                // pre-compose nearby pages so they are visible as the peek
                 beyondViewportPageCount = 3,
-                pageSpacing = 12.dp,
             ) { page ->
                 val item = state.filteredItems.getOrNull(page) ?: return@HorizontalPager
-
-                val pageOffset = ((page - pagerState.currentPage) -
-                        pagerState.currentPageOffsetFraction)
+                val pageOffset = ((page - pagerState.currentPage) - pagerState.currentPageOffsetFraction)
+                val visualOffset = if (isRtl) -pageOffset else pageOffset
+                val absOffset = abs(visualOffset)
 
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .zIndex(100f - abs(pageOffset))
+                        .zIndex(100f - absOffset)
                         .graphicsLayer {
-                            when {
-                                pageOffset < 0f -> {
-                                    // Swipe-away: slide off left with tilt + fade
-                                    translationX = pageOffset * size.width * 1.05f
-                                    rotationZ = pageOffset * 12f
-                                    alpha = (1f + pageOffset * 2f).coerceIn(0f, 1f)
-                                }
-                                else -> {
-                                    // Upcoming cards: keep inline, scale down, fade slightly
-                                    val scale = (1f - pageOffset * 0.06f).coerceIn(0.82f, 1f)
-                                    scaleX = scale
-                                    scaleY = scale
-                                    translationY = pageOffset * 18.dp.toPx()
-                                    alpha = (1f - pageOffset * 0.3f).coerceIn(0.4f, 1f)
-                                }
+                            if (visualOffset > 0f) {
+                                translationX = -visualOffset * size.width
+                                val scale = (1f - visualOffset * 0.08f).coerceIn(0.82f, 1f)
+                                scaleX = scale
+                                scaleY = scale
+                                translationY = visualOffset * 20.dp.toPx()
+                                alpha = (1f - visualOffset * 0.3f).coerceIn(0.4f, 1f)
+                                rotationZ = 0f
+                            } else {
+                                translationX = visualOffset * size.width * 1.1f
+                                rotationZ = visualOffset * 12f
+                                alpha = (1f + visualOffset * 0.8f).coerceIn(0f, 1f)
+                                scaleX = 1f
+                                scaleY = 1f
+                                translationY = 0f
                             }
                         },
                     contentAlignment = Alignment.Center,
@@ -201,8 +197,7 @@ private fun QotofContent(
             }
         }
 
-        // Swipe / tap hint
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "← اسحب للسؤال التالي · انقر لمعرفة الإجابة",
             style = MaterialTheme.typography.bodySmall.copy(
@@ -216,13 +211,11 @@ private fun QotofContent(
         )
     }
 
-    // ── Bottom Sheet: 75% height, scrollable answer ──────────────────────────
     state.selectedItem?.let { item ->
         ModalBottomSheet(
             onDismissRequest = onDismissItem,
             sheetState = bottomSheetState,
             dragHandle = {
-                // Gradient glow handle
                 Box(
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -248,7 +241,6 @@ private fun QotofContent(
                     contentPadding = PaddingValues(top = 20.dp, bottom = 32.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    // Encouragement header
                     item {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -267,53 +259,83 @@ private fun QotofContent(
                                 text = "« فَمَنْ يُرِدِ اللَّهُ بِهِ خَيْرًا يُفَقِّهْهُ فِي الدِّينِ »",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
-                                    fontStyle = FontStyle.Italic,
                                 ),
                                 textAlign = TextAlign.Center,
                             )
                         }
                     }
 
-                    // Question
                     item {
-                        Text(
-                            text = item.title,
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                            ),
-                            color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Start,
+                        Card(
                             modifier = Modifier.fillMaxWidth(),
-                        )
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            ),
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(
+                                    text = "السؤال",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    ),
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        lineHeight = 26.sp,
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                        }
                     }
 
-                    // Answer
                     item {
-                        Text(
-                            text = item.body,
-                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 30.sp),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Start,
-                        )
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            ),
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(
+                                    text = "الإجابة",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF00E676),
+                                    ),
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = item.body,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        lineHeight = 30.sp,
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                        }
                     }
 
-                    // Copy + Share actions
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            CopyButton(
+                            QotofCopyButton(
                                 onClick = {
                                     val textToCopy = "السؤال: ${item.title}\n\nالإجابة:\n${item.body}"
                                     clipboardManager.setText(AnnotatedString(textToCopy))
                                 }
                             )
-
                             Spacer(modifier = Modifier.size(10.dp))
-
-                            IconButton(
+                            LiquidGlassCard(
                                 onClick = {
                                     val shareText = "السؤال: ${item.title}\n\nالإجابة:\n${item.body}"
                                     val sendIntent = Intent().apply {
@@ -323,30 +345,23 @@ private fun QotofContent(
                                     }
                                     context.startActivity(Intent.createChooser(sendIntent, null))
                                 },
-                                modifier = Modifier
-                                    .background(
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                        CircleShape,
-                                    )
+                                modifier = Modifier.size(50.dp),
+                                cornerRadius = 999.dp,
+                                refraction = 0.55f,
+                                frost = 6f,
+                                dispersion = 0.15f,
+                                glowAlpha = 0.55f,
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Share,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp),
                                 )
                             }
                         }
                     }
                 }
-
-                // Particle burst overlay
-                ParticleBurstEffect(
-                    trigger = triggerParticles,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(220.dp)
-                        .align(Alignment.TopCenter),
-                )
             }
         }
     }
@@ -362,8 +377,22 @@ private fun QotofTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        IconButton(onClick = onBack) {
-            Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+        LiquidGlassCard(
+            onClick = onBack,
+            modifier = Modifier.size(44.dp),
+            cornerRadius = 999.dp,
+            refraction = 0.55f,
+            frost = 8f,
+            dispersion = 0.20f,
+            glowAlpha = 0.70f,
+        ) {
+            val bgLuminance = MaterialTheme.colorScheme.background.let { 0.299f * it.red + 0.587f * it.green + 0.114f * it.blue }
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = null,
+                tint = if (bgLuminance < 0.5f) Color.White else Color.Black,
+                modifier = Modifier.size(22.dp),
+            )
         }
         Text(
             text = stringResource(R.string.qotof_title),
@@ -371,9 +400,16 @@ private fun QotofTopBar(
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f),
         )
-        Spacer(modifier = Modifier.size(48.dp))
+        Spacer(modifier = Modifier.size(44.dp))
     }
 }
+
+private val cardDrawables = listOf(
+    R.drawable.card1, R.drawable.card2, R.drawable.card3, R.drawable.card4, R.drawable.card5,
+    R.drawable.card6, R.drawable.card7, R.drawable.card8, R.drawable.card9,
+    R.drawable.card10, R.drawable.card11, R.drawable.card12, R.drawable.card13,
+    R.drawable.card14, R.drawable.card15,
+)
 
 @Composable
 private fun QotofCard(
@@ -381,96 +417,165 @@ private fun QotofCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val drawableRes = cardDrawables[abs(item.title.hashCode()) % cardDrawables.size]
+
     Card(
-        onClick = onClick,
         modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
+            .fillMaxWidth(0.78f)
+            .fillMaxHeight(0.82f),
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(28.dp)
+                .fillMaxSize()
+                .clip(RoundedCornerShape(28.dp))
+                .clickable(onClick = onClick),
         ) {
-            // Faint watermark question mark
-            Text(
-                text = "؟",
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 160.sp,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.06f),
-                ),
+            Image(
+                painter = painterResource(id = drawableRes),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(x = 8.dp, y = 16.dp),
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = 0.55f },
             )
 
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                // Hashtag row
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("#قطوف", "#سؤال_وجواب", "#فتاوى").forEach { tag ->
-                        Text(
-                            text = tag,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.55f),
                             ),
+                        )
+                    )
+            )
+
+            var selectedTag by remember { mutableIntStateOf(0) }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(28.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    val tags = listOf("#قطوف", "#سؤال_وجواب")
+                    tags.forEachIndexed { index, text ->
+                        val isSelected = selectedTag == index
+                        LiquidGlassCard(
+                            onClick = { selectedTag = index },
+                            modifier = Modifier.height(34.dp),
+                            cornerRadius = 999.dp,
+                            refraction = 0.55f,
+                            frost = 8f,
+                            dispersion = 0.20f,
+                            glowAlpha = if (isSelected) 0.9f else 0.55f,
+                        ) {
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                color = if (isSelected) Color(0xFFFFD700) else Color.White.copy(alpha = 0.85f),
+                                modifier = Modifier.padding(horizontal = 14.dp),
+                            )
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FormatQuote,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.2f),
+                            modifier = Modifier.size(40.dp),
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = item.title,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = 36.sp,
+                            ),
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
 
-                // Question text only
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 34.sp,
-                        fontSize = 20.sp,
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Start,
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "انقر للإجابة",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color.White.copy(alpha = 0.6f),
+                        ),
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun CopyButton(
+private fun QotofCopyButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isCopied by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isCopied) 1.2f else 1.0f,
-        animationSpec = tween(durationMillis = 200),
+        targetValue = if (isCopied) 1.15f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = 0.4f,
+            stiffness = 300f,
+        ),
         label = "CopyScale",
     )
 
-    IconButton(
+    LiquidGlassCard(
         onClick = {
             onClick()
             isCopied = true
         },
         modifier = modifier
-            .scale(scale)
-            .background(
-                if (isCopied) Color(0xFF00E676).copy(alpha = 0.15f)
-                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                CircleShape,
-            ),
+            .size(50.dp)
+            .scale(scale),
+        cornerRadius = 999.dp,
+        refraction = 0.55f,
+        frost = 6f,
+        dispersion = 0.15f,
+        glowAlpha = if (isCopied) 0.8f else 0.55f,
     ) {
         Icon(
             imageVector = if (isCopied) Icons.Rounded.Check else Icons.Rounded.ContentCopy,
             contentDescription = null,
-            tint = if (isCopied) Color(0xFF00E676) else MaterialTheme.colorScheme.onSurface,
+            tint = if (isCopied) Color(0xFF00E676) else Color.White,
+            modifier = Modifier.size(22.dp),
         )
     }
 
@@ -481,59 +586,3 @@ private fun CopyButton(
         }
     }
 }
-
-@Composable
-private fun ParticleBurstEffect(
-    trigger: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    if (!trigger) return
-
-    val particles = remember(trigger) {
-        List(28) {
-            val angle = Random.nextFloat() * 2 * Math.PI
-            val speed = Random.nextFloat() * 5f + 2f
-            Particle(
-                x = 0.5f,
-                y = 0.35f,
-                vx = (Math.cos(angle) * speed).toFloat(),
-                vy = (Math.sin(angle) * speed - 3.5f).toFloat(),
-                color = if (Random.nextBoolean()) Color(0xFFFFD700) else Color(0xFF00E676),
-                size = Random.nextFloat() * 9f + 4f,
-            )
-        }
-    }
-
-    val progress = remember(trigger) { Animatable(0f) }
-
-    LaunchedEffect(trigger) {
-        progress.animateTo(1f, animationSpec = tween(durationMillis = 1400))
-    }
-
-    if (progress.value < 1f) {
-        Canvas(modifier = modifier) {
-            val w = size.width
-            val h = size.height
-            val t = progress.value
-            particles.forEach { p ->
-                val cx = w * p.x + p.vx * t * 28f
-                val cy = h * p.y + p.vy * t * 28f
-                val alpha = (1f - t).coerceIn(0f, 1f)
-                drawCircle(
-                    color = p.color.copy(alpha = alpha),
-                    radius = p.size,
-                    center = androidx.compose.ui.geometry.Offset(cx, cy),
-                )
-            }
-        }
-    }
-}
-
-private data class Particle(
-    val x: Float,
-    val y: Float,
-    val vx: Float,
-    val vy: Float,
-    val color: Color,
-    val size: Float,
-)

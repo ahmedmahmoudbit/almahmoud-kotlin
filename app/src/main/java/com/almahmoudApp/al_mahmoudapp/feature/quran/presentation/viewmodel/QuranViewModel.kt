@@ -30,6 +30,7 @@ class QuranViewModel @Inject constructor(
     init {
         loadQuranContent()
         observeFavorites()
+        observeLastReadPosition()
     }
 
     fun onQueryChange(query: String) {
@@ -83,6 +84,24 @@ class QuranViewModel @Inject constructor(
                         filteredSurahs = filterSurahsByType(updatedContent, current.selectedFilter, current.query)
                     )
                 }
+            }
+        }
+    }
+
+    private fun observeLastReadPosition() {
+        viewModelScope.launch {
+            appPreferencesDataSource.lastReadPage.collect { page ->
+                _state.update { it.copy(lastReadPage = page) }
+            }
+        }
+        viewModelScope.launch {
+            appPreferencesDataSource.lastReadSurah.collect { surah ->
+                _state.update { it.copy(lastReadSurah = surah) }
+            }
+        }
+        viewModelScope.launch {
+            appPreferencesDataSource.lastReadSurahName.collect { name ->
+                _state.update { it.copy(lastReadSurahName = name) }
             }
         }
     }

@@ -9,17 +9,9 @@ class ImagesRepositoryImpl @Inject constructor(
     private val localDataSource: ImagesLocalDataSource
 ) : ImagesRepository {
 
-    override suspend fun getIslamicImages(): Result<List<IslamicImage>> {
-        return runCatching {
-            localDataSource.getIslamicImagesUrls().map { url ->
-                IslamicImage(url = url, isWallpaper = false)
-            }
-        }
-    }
-
     override suspend fun getWallpaperBackgrounds(): Result<List<IslamicImage>> {
         return runCatching {
-            localDataSource.getWallpaperBackgroundsUrls().map { url ->
+            localDataSource.getWallpaperUrls().map { url ->
                 IslamicImage(url = url, isWallpaper = true)
             }
         }

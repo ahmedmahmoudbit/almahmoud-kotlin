@@ -9,9 +9,10 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.* // ktlint-disable no-wildcard-imports
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.feature.doaa.presentation.state.DoaaUiState
 import com.almahmoudApp.al_mahmoudapp.feature.doaa.presentation.viewmodel.DoaaViewModel
 import kotlinx.coroutines.delay
@@ -64,17 +66,19 @@ private val cardGradients = listOf (
 @Composable
 fun DoaaRoute(
     contentPadding: PaddingValues,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DoaaViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    DoaaScreen(state = state, contentPadding = contentPadding, modifier = modifier)
+    DoaaScreen(state = state, contentPadding = contentPadding, onBack = onBack, modifier = modifier)
 }
 
 @Composable
 fun DoaaScreen(
     state: DoaaUiState,
     contentPadding: PaddingValues,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -82,69 +86,94 @@ fun DoaaScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(BgDeep, BgMid, BgGreen),
-                    start = Offset(0f, 0f),
-                    end = Offset(400f, 900f),
-                )
-            )
-            .padding(contentPadding),
+            .background(MaterialTheme.colorScheme.background),
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(contentPadding)
+                .padding(horizontal = 18.dp, vertical = 12.dp)
+                .navigationBarsPadding(),
         ) {
-            Spacer(Modifier.height(22.dp))
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LiquidGlassCard(
+                        onClick = onBack,
+                        modifier = Modifier.size(44.dp),
+                        cornerRadius = 999.dp,
+                        refraction = 0.55f,
+                        frost = 8f,
+                        dispersion = 0.20f,
+                        glowAlpha = 0.70f,
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                }
 
-            // Bismillah
-            Text(
-                text = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
-                style = TextStyle(
-                    fontFamily = AmiriFont,
-                    fontSize = 15.sp,
-                    color = GoldLight.copy(alpha = 0.72f),
-                ),
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(5.dp))
+                Spacer(Modifier.height(22.dp))
 
-            // Title
-            Text(
-                text = "أدعية مأثورة",
-                style = TextStyle(
-                    fontFamily = AmiriFont,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFEAF2DC),
-                ),
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(4.dp))
-
-            // Subtitle
-            Text(
-                text = "اسحب البطاقة • اضغط مطولاً للنسخ",
-                style = TextStyle(
-                    fontFamily = AmiriFont,
-                    fontSize = 11.sp,
-                    color = GoldDim.copy(alpha = 0.5f),
-                    fontWeight = FontWeight.Light,
-                ),
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(20.dp))
-
-            when {
-                state.isLoading -> LoadingView()
-                state.errorMessage != null -> ErrorView(message = state.errorMessage)
-                else -> SwipeCardStack(
-                    items = state.items,
-                    onCopy = { copyToClipboard(context, it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                // Bismillah
+                Text(
+                    text = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+                    style = TextStyle(
+                        fontFamily = AmiriFont,
+                        fontSize = 15.sp,
+                        color = GoldLight.copy(alpha = 0.72f),
+                    ),
+                    textAlign = TextAlign.Center,
                 )
+                Spacer(Modifier.height(5.dp))
+
+                // Title
+                Text(
+                    text = "أدعية مأثورة",
+                    style = TextStyle(
+                        fontFamily = AmiriFont,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFEAF2DC),
+                    ),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(4.dp))
+
+                // Subtitle
+                Text(
+                    text = "اسحب البطاقة • اضغط مطولاً للنسخ",
+                    style = TextStyle(
+                        fontFamily = AmiriFont,
+                        fontSize = 11.sp,
+                        color = GoldDim.copy(alpha = 0.5f),
+                        fontWeight = FontWeight.Light,
+                    ),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(20.dp))
+
+                when {
+                    state.isLoading -> LoadingView()
+                    state.errorMessage != null -> ErrorView(message = state.errorMessage)
+                    else -> SwipeCardStack(
+                        items = state.items,
+                        onCopy = { copyToClipboard(context, it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                    )
+                }
             }
         }
     }

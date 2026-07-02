@@ -15,6 +15,7 @@ enum class HomeFeatureKey {
     APPS,
     SUGGESTIONS,
     CARDS,
+    RECORDINGS,
 }
 
 data class HomeFeature(

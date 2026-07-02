@@ -10,9 +10,11 @@ class HomeLocalDataSource @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) {
     fun loadHomeFeatures(): List<HomeFeature> {
-        return HomeFeatureKey.entries.mapIndexed { index, key ->
-            HomeFeature(key = key, sortOrder = index)
-        }
+        return HomeFeatureKey.entries
+            .filter { it != HomeFeatureKey.STATUS }
+            .mapIndexed { index, key ->
+                HomeFeature(key = key, sortOrder = index)
+            }
     }
 
     fun loadQuotes(): List<String> {

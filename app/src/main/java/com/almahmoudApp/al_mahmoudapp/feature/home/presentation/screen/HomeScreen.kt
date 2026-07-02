@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
@@ -157,12 +159,19 @@ private fun HomeContent(
     onFeatureSelected: (HomeFeatureKey) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val bottomBarPadding = 80.dp
+    val layoutDirection = LocalLayoutDirection.current
     Box(modifier = modifier.fillMaxSize()) {
         HomeBackground()
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(contentPadding)
+                .padding(
+                    top = contentPadding.calculateTopPadding(),
+                    bottom = contentPadding.calculateBottomPadding() + bottomBarPadding,
+                    start = contentPadding.calculateLeftPadding(layoutDirection),
+                    end = contentPadding.calculateRightPadding(layoutDirection),
+                )
                 .verticalScroll(rememberScrollState()),
         ) {
             HomePrayerPreview(
@@ -177,7 +186,6 @@ private fun HomeContent(
                 isLoading = state.isPrayerLoading,
                 errorMessage = state.prayerErrorMessage,
             )
-
             Spacer(modifier = Modifier.height(10.dp))
             Column(
                 modifier = Modifier
@@ -193,31 +201,23 @@ private fun HomeContent(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+            Spacer(modifier = Modifier.height(35.dp))
         }
     }
 }
 
 @Composable
 private fun HomeBackground() {
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = if (isDark) {
-                        listOf(
-                            Color(0xFF0A0A0A),
-                            Color(0xFF121212),
-                            Color(0xFF0A0A0A),
-                        )
-                    } else {
-                        listOf(
-                            Color(0xFFFFFFFF),
-                            Color(0xFFF5F5F5),
-                            Color(0xFFFFFFFF),
-                        )
-                    },
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.background,
+                    ),
                 ),
             ),
     )
@@ -261,7 +261,7 @@ private fun getLocalizedPrayerName(englishName: String, isFriday: Boolean = fals
         return when (englishName.lowercase().trim()) {
             "fajr" -> "Fajr"
             "sunrise", "shorouq", "shoorooq" -> "Sunrise"
-            "dhuhr" -> if (isFriday) "Friday" else "Dhuhr"
+            "dhuhr" -> if (isFriday) "Jumu'ah" else "Dhuhr"
             "asr" -> "Asr"
             "maghrib" -> "Maghrib"
             "isha" -> "Isha"
@@ -270,7 +270,6 @@ private fun getLocalizedPrayerName(englishName: String, isFriday: Boolean = fals
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 @Composable
 private fun HomePrayerPreview(
     day: PrayerDay?,
@@ -601,9 +600,9 @@ private fun HomeFeaturePager(
 }
 
 /**
- * A two-column staggered (masonry) grid. Cards alternate between two heights so the columns never
- * align, producing the staggered look. Items flow top-to-bottom, distributing evenly between the two
- * columns.
+ * A three-column staggered (masonry) grid. Cards alternate between two heights so the columns never
+ * align, producing the staggered look. Items flow top-to-bottom, distributing evenly between the
+ * three columns.
  */
 @Composable
 private fun HomeStaggeredGrid(
@@ -611,24 +610,29 @@ private fun HomeStaggeredGrid(
     onFeatureSelected: (HomeFeatureKey) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Distribute features across two columns, preserving order.
-    val leftColumn = remember(features) { features.filterIndexed { index, _ -> index % 2 == 0 } }
-    val rightColumn = remember(features) { features.filterIndexed { index, _ -> index % 2 == 1 } }
-
+    val col0 = remember(features) { features.filterIndexed { index, _ -> index % 3 == 0 } }
+    val col1 = remember(features) { features.filterIndexed { index, _ -> index % 3 == 1 } }
+    val col2 = remember(features) { features.filterIndexed { index, _ -> index % 3 == 2 } }
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         StaggeredColumn(
-            features = leftColumn,
+            features = col0,
             onFeatureSelected = onFeatureSelected,
-            startIndexEven = true,
+            startIndex = 0,
             modifier = Modifier.weight(1f),
         )
         StaggeredColumn(
-            features = rightColumn,
+            features = col1,
             onFeatureSelected = onFeatureSelected,
-            startIndexEven = false,
+            startIndex = 1,
+            modifier = Modifier.weight(1f),
+        )
+        StaggeredColumn(
+            features = col2,
+            onFeatureSelected = onFeatureSelected,
+            startIndex = 2,
             modifier = Modifier.weight(1f),
         )
     }
@@ -638,16 +642,15 @@ private fun HomeStaggeredGrid(
 private fun StaggeredColumn(
     features: List<HomeFeature>,
     onFeatureSelected: (HomeFeatureKey) -> Unit,
-    startIndexEven: Boolean,
+    startIndex: Int,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         features.forEachIndexed { index, feature ->
-            // Alternate card heights to create the staggered effect.
-            val isLarge = ((index + if (startIndexEven) 0 else 1) % 3 == 0)
+            val isLarge = ((index + startIndex) % 3 == 0)
             val cardModifier = Modifier
                 .fillMaxWidth()
                 .height(if (isLarge) STAGGER_HEIGHT_LARGE else STAGGER_HEIGHT_SMALL)
@@ -659,6 +662,5 @@ private fun StaggeredColumn(
         }
     }
 }
-
-private val STAGGER_HEIGHT_SMALL = 140.dp
-private val STAGGER_HEIGHT_LARGE = 180.dp
+private val STAGGER_HEIGHT_SMALL = 135.dp
+private val STAGGER_HEIGHT_LARGE = 175.dp

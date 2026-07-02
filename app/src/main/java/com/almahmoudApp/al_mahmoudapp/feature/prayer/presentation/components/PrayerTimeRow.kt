@@ -1,7 +1,6 @@
 package com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.components
 
 import AmiriFont
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,25 +38,14 @@ fun PrayerTimeRow(
     modifier: Modifier = Modifier,
 ) {
     val containerColor = if (isNext) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
     }
+    val nameColor = if (isNext) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(
-                if (isNext) {
-                    Modifier.border(
-                        width = 1.5.dp,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        shape = RoundedCornerShape(20.dp),
-                    )
-                } else {
-                    Modifier
-                },
-            ),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
     ) {
@@ -75,8 +62,7 @@ fun PrayerTimeRow(
                     fontWeight = FontWeight.Bold,
                     fontFamily = AmiriFont,
                 ),
-                color = if (isNext) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.alphaIf(isPast && !isNext, 0.55f),
+                color = nameColor,
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -131,12 +117,11 @@ private fun TimeColumn(
                 )
             },
             color = if (isNext && isPrimary) {
-                MaterialTheme.colorScheme.tertiary
+                MaterialTheme.colorScheme.primary
             } else {
-                MaterialTheme.colorScheme.onSurface
+                MaterialTheme.colorScheme.onSurfaceVariant
             },
             textAlign = TextAlign.Center,
-            modifier = Modifier.alphaIf(isPast, 0.7f),
         )
     }
 }
@@ -146,7 +131,3 @@ private fun String.cleanLocalizedTime(): String {
     val clean = split(" ").firstOrNull().orEmpty().ifBlank { this }
     return NumberLocalization.localize(clean)
 }
-
-/** Applies [alpha] when [condition] is true. */
-private fun Modifier.alphaIf(condition: Boolean, alpha: Float): Modifier =
-    if (condition) this.alpha(alpha) else this

@@ -54,11 +54,172 @@ class CardsViewModel @Inject constructor(
         _state.update { it.copy(isBoy = isBoy, previewBitmap = null, isSuccess = false, statusMessage = null) }
     }
 
+    fun onEidImageSelected(uri: Uri) {
+        _state.update { it.copy(eidImageUri = uri, previewBitmap = null, isSuccess = false, statusMessage = null) }
+    }
+
+    fun onEidPopupDismissed() {
+        _state.update { it.copy(showEidPopup = false) }
+    }
+
+    fun onEidScaleChanged(scale: Float) {
+        _state.update { it.copy(eidScale = scale.coerceIn(0.5f, 3f)) }
+    }
+
+    fun onEidOffsetChanged(dx: Float, dy: Float) {
+        _state.update { it.copy(eidOffsetX = it.eidOffsetX + dx, eidOffsetY = it.eidOffsetY + dy) }
+    }
+
+    fun openEidPopup() {
+        val s = _state.value
+        val uri = s.eidImageUri ?: return
+        viewModelScope.launch(Dispatchers.Default) {
+            try {
+                val userBitmap = context.contentResolver.openInputStream(uri)?.use {
+                    BitmapFactory.decodeStream(it)
+                } ?: return@launch
+
+                val frameResId = when (s.eidTemplateIndex) {
+                    0 -> R.drawable.eid1
+                    1 -> R.drawable.eid2
+                    2 -> R.drawable.eid3
+                    3 -> R.drawable.eid4
+                    else -> R.drawable.eid5
+                }
+                val frameBitmap = BitmapFactory.decodeResource(context.resources, frameResId)
+
+                _state.update {
+                    it.copy(
+                        showEidPopup = true,
+                        eidUserBitmap = userBitmap,
+                        eidFrameBitmap = frameBitmap,
+                        eidScale = 1f,
+                        eidOffsetX = 0f,
+                        eidOffsetY = 0f,
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _state.update { it.copy(statusMessage = "فشل تحميل الصورة") }
+            }
+        }
+    }
+
+    fun saveEidComposite() {
+        val s = _state.value
+        val userBitmap = s.eidUserBitmap ?: return
+        val frameBitmap = s.eidFrameBitmap ?: return
+        val name = s.name.trim()
+
+        _state.update { it.copy(isDownloading = true) }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            try {
+                val result = compositeEidImage(
+                    userBitmap = userBitmap,
+                    frameBitmap = frameBitmap,
+                    scale = s.eidScale,
+                    offsetX = s.eidOffsetX,
+                    offsetY = s.eidOffsetY,
+                    name = name,
+                    templateIndex = s.eidTemplateIndex,
+                )
+
+                withContext(Dispatchers.IO) {
+                    val fileName = "al_mahmoud_eid_${System.currentTimeMillis()}.jpg"
+                    val values = ContentValues().apply {
+                        put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/المحمود")
+                        }
+                    }
+                    val uri = context.contentResolver.insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+                    ) ?: throw Exception("تعذر إنشاء ملف الصورة")
+                    val outputStream = context.contentResolver.openOutputStream(uri)
+                        ?: throw Exception("تعذر فتح مسار حفظ الصورة")
+                    outputStream.use {
+                        result.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                    }
+                }
+
+                _state.update {
+                    it.copy(
+                        isDownloading = false,
+                        isSuccess = true,
+                        statusMessage = "تم حفظ بطاقة التهنئة بنجاح"
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _state.update {
+                    it.copy(isDownloading = false, statusMessage = "فشل: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun compositeEidImage(
+        userBitmap: Bitmap,
+        frameBitmap: Bitmap,
+        scale: Float,
+        offsetX: Float,
+        offsetY: Float,
+        name: String,
+        templateIndex: Int,
+    ): Bitmap {
+        val frameW = frameBitmap.width
+        val frameH = frameBitmap.height
+
+        val result = Bitmap.createBitmap(frameW, frameH, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+
+        val scaledW = (userBitmap.width * scale).toInt().coerceAtLeast(1)
+        val scaledH = (userBitmap.height * scale).toInt().coerceAtLeast(1)
+        val scaledUser = Bitmap.createScaledBitmap(userBitmap, scaledW, scaledH, true)
+
+        val drawX = ((frameW - scaledW) / 2f + offsetX).toInt()
+        val drawY = ((frameH - scaledH) / 2f + offsetY).toInt()
+        canvas.drawBitmap(scaledUser, drawX.toFloat(), drawY.toFloat(), null)
+        canvas.drawBitmap(frameBitmap, 0f, 0f, null)
+
+        if (name.isNotEmpty()) {
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                textAlign = Paint.Align.CENTER
+                isFakeBoldText = true
+            }
+            val typeface = try {
+                ResourcesCompat.getFont(context, R.font.amiri_bold)
+            } catch (e: Exception) {
+                Typeface.DEFAULT_BOLD
+            }
+            paint.typeface = typeface
+
+            val textColor = when (templateIndex) {
+                0, 1 -> Color.rgb(212, 175, 55)
+                2 -> Color.WHITE
+                else -> Color.BLACK
+            }
+            paint.color = textColor
+            paint.textSize = 60f
+            paint.setShadowLayer(8f, 0f, 2f, Color.BLACK)
+
+            val textY = if (templateIndex == 0) frameH * 0.85f else frameH * 0.80f
+            canvas.drawText(name, frameW / 2f, textY, paint)
+        }
+
+        return result
+    }
+
     fun generatePreview() {
-        val name = _state.value.name.trim()
-        if (name.isEmpty()) {
-            _state.update { it.copy(statusMessage = "الرجاء إدخال الاسم أولاً") }
-            return
+        val s = _state.value
+        if (s.category != CardCategory.EID_FITR) {
+            val name = s.name.trim()
+            if (name.isEmpty()) {
+                _state.update { it.copy(statusMessage = "الرجاء إدخال الاسم أولاً") }
+                return
+            }
         }
 
         _state.update { it.copy(isGenerating = true, statusMessage = null) }
@@ -66,28 +227,26 @@ class CardsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Default) {
             try {
                 val category = _state.value.category
+                val name = _state.value.name.trim()
                 val isBoy = _state.value.isBoy
                 val eidIndex = _state.value.eidTemplateIndex
+                val eidImageUri = _state.value.eidImageUri
 
-                // Resolve drawable resource
-                val drawableRes = when (category) {
-                    CardCategory.WAFAYAT -> R.drawable.die
-                    CardCategory.SADAKA -> R.drawable.sadaka
-                    CardCategory.MAWALEED -> if (isBoy) R.drawable.boy else R.drawable.girl
-                    CardCategory.EID_FITR -> when (eidIndex) {
-                        0 -> R.drawable.eid1
-                        1 -> R.drawable.eid2
-                        2 -> R.drawable.eid3
-                        3 -> R.drawable.eid4
-                        else -> R.drawable.eid5
+                val originalBitmap = if (category == CardCategory.EID_FITR && eidImageUri != null) {
+                    val inputStream = context.contentResolver.openInputStream(eidImageUri)
+                    BitmapFactory.decodeStream(inputStream)
+                        ?: throw Exception("تعذر تحميل الصورة المرفوعة")
+                } else {
+                    val drawableRes = when (category) {
+                        CardCategory.WAFAYAT -> R.drawable.die
+                        CardCategory.SADAKA -> R.drawable.sadaka
+                        CardCategory.MAWALEED -> if (isBoy) R.drawable.boy else R.drawable.girl
+                        CardCategory.EID_FITR -> R.drawable.eid1
                     }
+                    val options = BitmapFactory.Options().apply { inMutable = true }
+                    BitmapFactory.decodeResource(context.resources, drawableRes, options)
+                        ?: throw Exception("تعذر تحميل قالب البطاقة")
                 }
-
-                val options = BitmapFactory.Options().apply {
-                    inMutable = true
-                }
-                val originalBitmap = BitmapFactory.decodeResource(context.resources, drawableRes, options)
-                    ?: throw Exception("تعذر تحميل قالب البطاقة")
 
                 val mutableBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
                 val canvas = Canvas(mutableBitmap)
@@ -140,48 +299,48 @@ class CardsViewModel @Inject constructor(
                 }
 
                 // Draw name (wrapping if long)
-                val maxWidth = width * 0.85f
-                val textWidth = paint.measureText(name)
+                if (name.isNotEmpty()) {
+                    val maxWidth = width * 0.85f
+                    val textWidth = paint.measureText(name)
 
-                if (textWidth > maxWidth) {
-                    val words = name.split(" ")
-                    if (words.size > 1) {
-                        val line1 = StringBuilder()
-                        val line2 = StringBuilder()
-                        val half = words.size / 2
-                        for (i in words.indices) {
-                            if (i < half) {
-                                if (line1.isNotEmpty()) line1.append(" ")
-                                line1.append(words[i])
-                            } else {
-                                if (line2.isNotEmpty()) line2.append(" ")
-                                line2.append(words[i])
+                    if (textWidth > maxWidth) {
+                        val words = name.split(" ")
+                        if (words.size > 1) {
+                            val line1 = StringBuilder()
+                            val line2 = StringBuilder()
+                            val half = words.size / 2
+                            for (i in words.indices) {
+                                if (i < half) {
+                                    if (line1.isNotEmpty()) line1.append(" ")
+                                    line1.append(words[i])
+                                } else {
+                                    if (line2.isNotEmpty()) line2.append(" ")
+                                    line2.append(words[i])
+                                }
                             }
-                        }
 
-                        // Adjust font size to fit on lines
-                        var currentSize = fontSize
-                        paint.textSize = currentSize
-                        while ((paint.measureText(line1.toString()) > maxWidth || paint.measureText(line2.toString()) > maxWidth) && currentSize > 25f) {
-                            currentSize -= 4f
+                            var currentSize = fontSize
                             paint.textSize = currentSize
-                        }
+                            while ((paint.measureText(line1.toString()) > maxWidth || paint.measureText(line2.toString()) > maxWidth) && currentSize > 25f) {
+                                currentSize -= 4f
+                                paint.textSize = currentSize
+                            }
 
-                        val lineSpacing = paint.textSize * 1.2f
-                        canvas.drawText(line1.toString(), x, y - (lineSpacing / 2), paint)
-                        canvas.drawText(line2.toString(), x, y + (lineSpacing / 2), paint)
+                            val lineSpacing = paint.textSize * 1.2f
+                            canvas.drawText(line1.toString(), x, y - (lineSpacing / 2), paint)
+                            canvas.drawText(line2.toString(), x, y + (lineSpacing / 2), paint)
+                        } else {
+                            var currentSize = fontSize
+                            paint.textSize = currentSize
+                            while (paint.measureText(name) > maxWidth && currentSize > 25f) {
+                                currentSize -= 4f
+                                paint.textSize = currentSize
+                            }
+                            canvas.drawText(name, x, y, paint)
+                        }
                     } else {
-                        // Single long word
-                        var currentSize = fontSize
-                        paint.textSize = currentSize
-                        while (paint.measureText(name) > maxWidth && currentSize > 25f) {
-                            currentSize -= 4f
-                            paint.textSize = currentSize
-                        }
                         canvas.drawText(name, x, y, paint)
                     }
-                } else {
-                    canvas.drawText(name, x, y, paint)
                 }
 
                 _state.update {

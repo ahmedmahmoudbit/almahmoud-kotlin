@@ -1,11 +1,12 @@
 package com.almahmoudApp.al_mahmoudapp.feature.tasbeeh.presentation.screen
 
 import AmiriFont
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,40 +20,52 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,7 +76,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.almahmoudApp.al_mahmoudapp.R
-import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.liquidSource
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.feature.tasbeeh.domain.model.TasbeehDhikr
 import com.almahmoudApp.al_mahmoudapp.feature.tasbeeh.presentation.state.TasbeehUiState
 import com.almahmoudApp.al_mahmoudapp.feature.tasbeeh.presentation.viewmodel.TasbeehViewModel
@@ -82,11 +95,12 @@ fun TasbeehRoute(
         onBack = onBack,
         onIncrement = viewModel::incrementCount,
         onReset = viewModel::resetCount,
+        onSetCustom = viewModel::setCustomDhikr,
         modifier = modifier
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TasbeehScreen(
     state: TasbeehUiState,
@@ -94,12 +108,12 @@ fun TasbeehScreen(
     onBack: () -> Unit,
     onIncrement: () -> Unit,
     onReset: () -> Unit,
+    onSetCustom: (String, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
 
-    // Congratulations audio playback
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     LaunchedEffect(state.isFinished) {
         if (state.isFinished) {
@@ -117,256 +131,228 @@ fun TasbeehScreen(
         }
     }
 
-    // Load Lottie compositions
     val clickComposition by rememberLottieComposition(
         spec = LottieCompositionSpec.RawRes(R.raw.click)
     )
-    val progressComposition by rememberLottieComposition(
-        spec = LottieCompositionSpec.RawRes(R.raw.progress)
-    )
-    val flowerComposition by rememberLottieComposition(
-        spec = LottieCompositionSpec.RawRes(R.raw.flower)
-    )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "السبحة الإلكترونية",
-                        fontFamily = AmiriFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.onSurface
+    val targetCount = if (state.isCustom) state.customTarget else TasbeehDhikr.MilestoneStep
+
+    var tapAnimKey by remember { mutableIntStateOf(0) }
+    var showCustomDialog by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.b4),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(0.6f),
+        )
+
+        Box(
+            modifier = Modifier
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            Color.Black,
+                        )
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "رجوع"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        onReset()
-                        mediaPlayer?.stop()
-                        mediaPlayer?.release()
-                        mediaPlayer = null
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "إعادة ضبط"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
                 )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background,
-        modifier = modifier.padding(contentPadding)
-    ) { innerPadding ->
-        LiquidHost(modifier = Modifier.fillMaxSize()) {
+                .fillMaxSize()
+        ) {
+            // المحتوى مع الـ padding الخاص بـ insets فقط
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .liquidSource()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                                MaterialTheme.colorScheme.background,
-                                MaterialTheme.colorScheme.surface
-                            )
-                        )
-                    )
-                    .padding(innerPadding)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
+                    .statusBarsPadding()
+                    .padding(contentPadding)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .navigationBarsPadding()
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    // Liquid Glass Dhikr Card
                     LiquidGlassCard(
-                        onClick = {},
-                        cornerRadius = 24.dp,
-                        refraction = 0.35f,
-                        frost = 10f,
-                        dispersion = 0.25f,
-                        glowAlpha = 0.4f,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
+                        onClick = onBack,
+                        modifier = Modifier.size(44.dp),
+                        cornerRadius = 999.dp,
+                        refraction = 0.55f,
+                        frost = 8f,
+                        dispersion = 0.20f,
+                        glowAlpha = 0.70f,
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = state.currentDhikr,
-                                fontFamily = AmiriFont,
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 42.sp,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "التقدم: ${state.count} / ${TasbeehDhikr.MaxCount}",
-                                fontFamily = AmiriFont,
-                                fontSize = 19.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "رجوع",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp),
+                        )
                     }
-
-                    // Milestone Progress Indicators
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
+                    Spacer(modifier = Modifier.weight(1f))
+                    LiquidGlassCard(
+                        onClick = { showCustomDialog = true },
+                        modifier = Modifier.height(44.dp),
+                        cornerRadius = 999.dp,
+                        refraction = 0.55f,
+                        frost = 8f,
+                        dispersion = 0.20f,
+                        glowAlpha = 0.70f,
                     ) {
                         Text(
-                            text = "مؤشرات الإنجاز",
+                            text = "تخصيص",
                             fontFamily = AmiriFont,
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 16.dp),
                         )
-                        
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            maxItemsInEachRow = 5
-                        ) {
-                            repeat(10) { index ->
-                                val milestoneCompleted = state.count >= (index + 1) * TasbeehDhikr.MilestoneStep
-                                
-                                Box(
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    LiquidGlassCard(
+                        onClick = {
+                            onReset()
+                            mediaPlayer?.stop()
+                            mediaPlayer?.release()
+                            mediaPlayer = null
+                        },
+                        modifier = Modifier.size(44.dp),
+                        cornerRadius = 999.dp,
+                        refraction = 0.55f,
+                        frost = 8f,
+                        dispersion = 0.20f,
+                        glowAlpha = 0.70f,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "إعادة ضبط",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(80.dp))
+                    Text(
+                        text = state.currentDhikr,
+                        fontFamily = AmiriFont,
+                        fontSize = 42.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 58.sp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = "${state.count} / ${targetCount}",
+                        fontFamily = AmiriFont,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        maxItemsInEachRow = 5
+                    ) {
+                        if (!state.isCustom) {
+                            TasbeehDhikr.milestones.forEachIndexed { index, _ ->
+                                val completed =
+                                    state.count >= (index + 1) * TasbeehDhikr.MilestoneStep
+                                val isCurrent = index == (state.count / TasbeehDhikr.MilestoneStep)
+                                    .coerceAtMost(TasbeehDhikr.milestones.lastIndex)
+
+                                LiquidGlassCard(
+                                    onClick = {},
                                     modifier = Modifier
                                         .padding(6.dp)
-                                        .size(44.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (milestoneCompleted) MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                                        ),
-                                    contentAlignment = Alignment.Center
+                                        .size(44.dp),
+                                    cornerRadius = 999.dp,
+                                    refraction = 0.55f,
+                                    frost = 8f,
+                                    dispersion = 0.20f,
+                                    glowAlpha = 0.70f,
                                 ) {
-                                    if (milestoneCompleted) {
-                                        LottieAnimation(
-                                            composition = progressComposition,
-                                            iterations = LottieConstants.IterateForever,
-                                            modifier = Modifier.size(36.dp)
+                                    if (completed) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Favorite,
+                                            contentDescription = null,
+                                            tint = Color(0xFFFFD700),
+                                            modifier = Modifier.size(22.dp)
                                         )
                                     } else {
                                         Text(
                                             text = "${index + 1}",
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                            color = Color.White
                                         )
                                     }
                                 }
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Congratulation Card
-                    AnimatedVisibility(visible = state.isFinished) {
-                        LiquidGlassCard(
-                            onClick = {},
-                            cornerRadius = 16.dp,
-                            refraction = 0.2f,
-                            frost = 6f,
-                            dispersion = 0.1f,
-                            glowAlpha = 0.3f,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                LottieAnimation(
-                                    composition = flowerComposition,
-                                    iterations = LottieConstants.IterateForever,
-                                    modifier = Modifier.size(40.dp)
-                                )
-                                Text(
-                                    text = state.congratulationMessage,
-                                    fontFamily = AmiriFont,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-                                LottieAnimation(
-                                    composition = flowerComposition,
-                                    iterations = LottieConstants.IterateForever,
-                                    modifier = Modifier.size(40.dp)
-                                )
-                            }
-                        }
+                    AnimatedVisibility(
+                        visible = state.isFinished,
+                        enter = fadeIn() + scaleIn()
+                    ) {
+                        Text(
+                            text = state.congratulationMessage,
+                            fontFamily = AmiriFont,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFFD700),
+                            textAlign = TextAlign.Center,
+                        )
                     }
-
-                    // Main Click Target
                     if (!state.isFinished) {
                         var isPressed by remember { mutableStateOf(false) }
-                        val buttonScale by animateFloatAsState(targetValue = if (isPressed) 0.88f else 1.0f, label = "buttonScale")
+                        val buttonScale by animateFloatAsState(
+                            targetValue = if (isPressed) 0.88f else 1.0f,
+                            label = "buttonScale"
+                        )
 
                         Box(
                             modifier = Modifier
-                                .size(240.dp)
+                                .size(320.dp)
                                 .scale(buttonScale)
                                 .clickable(
                                     interactionSource = null,
                                     indication = null,
                                     onClick = {
+                                        tapAnimKey++
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         onIncrement()
                                     }
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            LottieAnimation(
-                                composition = clickComposition,
-                                iterations = LottieConstants.IterateForever,
-                                modifier = Modifier.size(230.dp)
-                            )
-                            Text(
-                                text = "اضغط",
-                                fontFamily = AmiriFont,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            key(tapAnimKey) {
+                                LottieAnimation(
+                                    composition = clickComposition,
+                                    iterations = 1,
+                                    modifier = Modifier.size(310.dp)
+                                )
+                            }
                         }
                     } else {
-                        // Reset Button at finish state
                         Box(
                             modifier = Modifier
                                 .size(240.dp)
-                                .scale(1.0f)
-                                .clip(CircleShape)
+                                .clip(RoundedCornerShape(999.dp))
                                 .background(
                                     Brush.linearGradient(
                                         colors = listOf(
@@ -388,7 +374,7 @@ fun TasbeehScreen(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Refresh,
+                                    imageVector = Icons.Rounded.Refresh,
                                     contentDescription = "بدء من جديد",
                                     tint = Color.White,
                                     modifier = Modifier.size(48.dp)
@@ -404,6 +390,128 @@ fun TasbeehScreen(
                             }
                         }
                     }
+                }
+            }
+            if (showCustomDialog) {
+                CustomDhikrBottomSheet(
+                    onDismiss = { showCustomDialog = false },
+                    onConfirm = { dhikr, target ->
+                        onSetCustom(dhikr, target)
+                        showCustomDialog = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CustomDhikrBottomSheet(
+    onDismiss: () -> Unit,
+    onConfirm: (dhikr: String, target: Int) -> Unit,
+) {
+    var dhikrText by remember { mutableStateOf("") }
+    var targetText by remember { mutableStateOf("33") }
+    var isError by remember { mutableStateOf(false) }
+
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "تخصيص الذكر",
+                fontFamily = AmiriFont,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = dhikrText,
+                onValueChange = { dhikrText = it },
+                label = { Text("الذكر", fontFamily = AmiriFont) },
+                placeholder = { Text("أدخل الذكر", fontFamily = AmiriFont) },
+                singleLine = false,
+                maxLines = 3,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                )
+            )
+
+            OutlinedTextField(
+                value = targetText,
+                onValueChange = { newValue ->
+                    if (newValue.all { it.isDigit() }) {
+                        targetText = newValue
+                        isError = false
+                    }
+                },
+                label = { Text("عدد المرات", fontFamily = AmiriFont) },
+                placeholder = { Text("33", fontFamily = AmiriFont) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                isError = isError,
+                supportingText = if (isError) {
+                    { Text("أدخل رقم صحيح", fontFamily = AmiriFont) }
+                } else null,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        "إلغاء",
+                        fontFamily = AmiriFont,
+                        fontSize = 16.sp,
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        val target = targetText.toIntOrNull()
+                        if (dhikrText.isNotBlank() && target != null && target > 0) {
+                            onConfirm(dhikrText.trim(), target)
+                        } else {
+                            isError = true
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(
+                        "تأكيد",
+                        fontFamily = AmiriFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                    )
                 }
             }
         }

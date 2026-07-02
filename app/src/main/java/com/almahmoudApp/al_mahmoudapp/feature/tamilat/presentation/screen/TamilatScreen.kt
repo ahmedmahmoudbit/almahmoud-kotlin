@@ -3,8 +3,10 @@ package com.almahmoudApp.al_mahmoudapp.feature.tamilat.presentation.screen
 import AmiriFont
 import android.content.Intent
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,13 +17,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -32,24 +34,29 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +70,7 @@ import com.almahmoudApp.al_mahmoudapp.R
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.ErrorView
 import com.almahmoudApp.al_mahmoudapp.core.ui.components.LoadingView
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidHost
 import com.almahmoudApp.al_mahmoudapp.feature.tamilat.domain.model.TamilatItem
 import com.almahmoudApp.al_mahmoudapp.feature.tamilat.presentation.state.TamilatUiState
@@ -115,61 +123,57 @@ private fun TamilatContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(contentPadding)
-            .padding(vertical = 14.dp),
+            .padding(vertical = 14.dp)
+            .navigationBarsPadding(),
     ) {
-        // Top bar
         TamilatTopBar(
             onBack = onBack,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Pager containing reflections
         Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            val pagerState = rememberPagerState(pageCount = { state.reflections.size })
+            val middlePage = state.reflections.size / 2
+            val pagerState = rememberPagerState(
+                initialPage = middlePage,
+                pageCount = { state.reflections.size },
+            )
+            val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 48.dp),
                 beyondViewportPageCount = 3,
-                pageSpacing = 0.dp,
             ) { page ->
                 val item = state.reflections.getOrNull(page) ?: return@HorizontalPager
                 val pageOffset = ((page - pagerState.currentPage) - pagerState.currentPageOffsetFraction)
+                val visualOffset = if (isRtl) -pageOffset else pageOffset
+                val absOffset = abs(visualOffset)
 
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .zIndex(100f - abs(pageOffset))
+                        .zIndex(100f - absOffset)
                         .graphicsLayer {
-                            val isBehind = pageOffset > 0f
-                            if (isBehind) {
-                                // Stacked behind cards: translate horizontally to counteract horizontal pager layout
-                                translationX = -pageOffset * size.width
-                                
-                                // Scale them down based on their depth in the stack
-                                val scale = (1f - pageOffset * 0.05f).coerceIn(0.85f, 1f)
+                            if (visualOffset > 0f) {
+                                translationX = -visualOffset * size.width
+                                val scale = (1f - visualOffset * 0.08f).coerceIn(0.82f, 1f)
                                 scaleX = scale
                                 scaleY = scale
-                                
-                                // Translate downwards to show the stacked effect
-                                translationY = pageOffset * 16.dp.toPx()
-                                
-                                // Fade out cards deeper in the stack
-                                alpha = (1f - pageOffset * 0.35f).coerceIn(0f, 1f)
+                                translationY = visualOffset * 20.dp.toPx()
+                                alpha = (1f - visualOffset * 0.3f).coerceIn(0.4f, 1f)
+                                rotationZ = 0f
                             } else {
-                                // The current card or cards swiped away (pageOffset <= 0)
-                                // They slide out to the left/right and rotate slightly
-                                translationX = pageOffset * size.width * 1.05f
-                                rotationZ = pageOffset * 10f
-                                alpha = (1f + pageOffset).coerceIn(0f, 1f)
+                                translationX = visualOffset * size.width * 1.1f
+                                rotationZ = visualOffset * 12f
+                                alpha = (1f + visualOffset * 0.8f).coerceIn(0f, 1f)
                                 scaleX = 1f
                                 scaleY = 1f
                                 translationY = 0f
@@ -195,10 +199,10 @@ private fun TamilatContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = if (com.almahmoudApp.al_mahmoudapp.core.util.NumberLocalization.isArabic()) 
-                "← اسحب لتبديل البطاقات وقراءة المزيد من التأملات والمواعظ" 
+            text = if (com.almahmoudApp.al_mahmoudapp.core.util.NumberLocalization.isArabic())
+                "← اسحب لتبديل البطاقات وقراءة المزيد من التأملات والمواعظ"
             else "← Swipe to switch cards and read more reflections and sermons",
             style = MaterialTheme.typography.bodySmall.copy(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
@@ -222,8 +226,22 @@ private fun TamilatTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        IconButton(onClick = onBack) {
-            Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+        LiquidGlassCard(
+            onClick = onBack,
+            modifier = Modifier.size(44.dp),
+            cornerRadius = 999.dp,
+            refraction = 0.55f,
+            frost = 8f,
+            dispersion = 0.20f,
+            glowAlpha = 0.70f,
+        ) {
+            val bgLuminance = MaterialTheme.colorScheme.background.let { 0.299f * it.red + 0.587f * it.green + 0.114f * it.blue }
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = null,
+                tint = if (bgLuminance < 0.5f) Color.White else Color.Black,
+                modifier = Modifier.size(22.dp),
+            )
         }
         Text(
             text = stringResource(R.string.tamilat_title),
@@ -231,9 +249,16 @@ private fun TamilatTopBar(
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f),
         )
-        Spacer(modifier = Modifier.size(48.dp))
+        Spacer(modifier = Modifier.size(44.dp))
     }
 }
+
+private val cardDrawables = listOf(
+    R.drawable.card1, R.drawable.card2, R.drawable.card3, R.drawable.card4, R.drawable.card5,
+    R.drawable.card6, R.drawable.card7, R.drawable.card8, R.drawable.card9,
+    R.drawable.card10, R.drawable.card11, R.drawable.card12, R.drawable.card13,
+    R.drawable.card14, R.drawable.card15,
+)
 
 @Composable
 private fun TamilatCard(
@@ -242,104 +267,138 @@ private fun TamilatCard(
     onShare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val drawableRes = cardDrawables[item.id % cardDrawables.size]
+
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.8f),
-        shape = RoundedCornerShape(32.dp),
+            .fillMaxWidth(0.78f)
+            .fillMaxHeight(0.82f),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (androidx.compose.foundation.isSystemInDarkTheme()) {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-            } else {
-                Color.White
-            },
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp)
+                .clip(RoundedCornerShape(28.dp))
         ) {
-            // Large Watermark Quote Icon
-            Icon(
-                imageVector = Icons.Rounded.FormatQuote,
+            Image(
+                painter = painterResource(id = drawableRes),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(160.dp)
-                    .align(Alignment.TopStart)
-                    .offset(x = (-16).dp, y = (-24).dp)
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = 0.55f },
             )
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.55f),
+                            ),
+                        )
+                    )
+            )
+
+            var selectedTag by remember { mutableIntStateOf(0) }
+
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(28.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Category Tags
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val tag = if (com.almahmoudApp.al_mahmoudapp.core.util.NumberLocalization.isArabic()) "#تأملات" else "#Reflections"
-                    val tag2 = if (com.almahmoudApp.al_mahmoudapp.core.util.NumberLocalization.isArabic()) "#مواعظ" else "#Wisdom"
-                    listOf(tag, tag2).forEach { text ->
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            ),
-                        )
+                    val tags = if (com.almahmoudApp.al_mahmoudapp.core.util.NumberLocalization.isArabic()) {
+                        listOf("#تأملات", "#مواعظ")
+                    } else {
+                        listOf("#Reflections", "#Wisdom")
+                    }
+                    tags.forEachIndexed { index, text ->
+                        val isSelected = selectedTag == index
+                        LiquidGlassCard(
+                            onClick = { selectedTag = index },
+                            modifier = Modifier.height(34.dp),
+                            cornerRadius = 999.dp,
+                            refraction = 0.55f,
+                            frost = 8f,
+                            dispersion = 0.20f,
+                            glowAlpha = if (isSelected) 0.9f else 0.55f,
+                        ) {
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                color = if (isSelected) Color(0xFFFFD700) else Color.White.copy(alpha = 0.85f),
+                                modifier = Modifier.padding(horizontal = 14.dp),
+                            )
+                        }
                     }
                 }
 
-                // Reflection Text
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = item.text,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Medium,
-                            lineHeight = 38.sp,
-                            fontFamily = AmiriFont
-                        ),
-                        color = if (androidx.compose.foundation.isSystemInDarkTheme()) {
-                            MaterialTheme.colorScheme.onSurface
-                        } else {
-                            Color(0xFF2E3A59)
-                        },
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FormatQuote,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.2f),
+                            modifier = Modifier.size(40.dp),
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = item.text,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = 42.sp,
+                                fontFamily = AmiriFont,
+                            ),
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
 
-                // Bottom actions (Copy & Share)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CopyButton(onClick = onCopy)
-                    Spacer(modifier = Modifier.size(16.dp))
-                    IconButton(
+                    Spacer(modifier = Modifier.width(12.dp))
+                    LiquidGlassCard(
                         onClick = onShare,
-                        modifier = Modifier
-                            .size(54.dp)
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                CircleShape,
-                            )
+                        modifier = Modifier.size(50.dp),
+                        cornerRadius = 999.dp,
+                        refraction = 0.55f,
+                        frost = 6f,
+                        dispersion = 0.15f,
+                        glowAlpha = 0.55f,
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp),
                         )
                     }
                 }
@@ -356,29 +415,33 @@ private fun CopyButton(
     var isCopied by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isCopied) 1.2f else 1.0f,
-        animationSpec = tween(durationMillis = 200),
+        targetValue = if (isCopied) 1.15f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = 0.4f,
+            stiffness = 300f,
+        ),
         label = "CopyScale",
     )
 
-    IconButton(
+    LiquidGlassCard(
         onClick = {
             onClick()
             isCopied = true
         },
         modifier = modifier
-            .size(54.dp)
-            .scale(scale)
-            .background(
-                if (isCopied) Color(0xFF00E676).copy(alpha = 0.15f)
-                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                CircleShape,
-            ),
+            .size(50.dp)
+            .scale(scale),
+        cornerRadius = 999.dp,
+        refraction = 0.55f,
+        frost = 6f,
+        dispersion = 0.15f,
+        glowAlpha = if (isCopied) 0.8f else 0.55f,
     ) {
         Icon(
             imageVector = if (isCopied) Icons.Rounded.Check else Icons.Rounded.ContentCopy,
             contentDescription = null,
-            tint = if (isCopied) Color(0xFF00E676) else MaterialTheme.colorScheme.onSurface,
+            tint = if (isCopied) Color.Black else Color.White,
+            modifier = Modifier.size(22.dp),
         )
     }
 

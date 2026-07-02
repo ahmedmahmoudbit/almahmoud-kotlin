@@ -4,10 +4,20 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -15,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.almahmoudApp.al_mahmoudapp.core.ui.liquid.LiquidGlassCard
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatRoute
 import com.almahmoudApp.al_mahmoudapp.feature.ayat.presentation.screen.AyatSoundRoute
 import com.almahmoudApp.al_mahmoudapp.feature.azkar.presentation.screen.AzkarDetailsRoute
@@ -23,6 +34,7 @@ import com.almahmoudApp.al_mahmoudapp.feature.home.domain.model.HomeFeatureKey
 import com.almahmoudApp.al_mahmoudapp.feature.home.presentation.screen.HomeRoute
 import com.almahmoudApp.al_mahmoudapp.feature.images.presentation.screen.ImagesRoute
 import com.almahmoudApp.al_mahmoudapp.feature.onboarding.presentation.screen.OnboardingRoute
+import com.almahmoudApp.al_mahmoudapp.feature.recordings.presentation.screen.RecordingsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.tasbeeh.presentation.screen.TasbeehRoute
 import com.almahmoudApp.al_mahmoudapp.feature.cards.presentation.screen.CardsRoute
 import com.almahmoudApp.al_mahmoudapp.feature.prayer.presentation.screen.PrayerRoute
@@ -103,6 +115,8 @@ fun AppNavHost(
                         HomeFeatureKey.CARDS -> navController.navigate(AppDestination.Cards.route)
                         HomeFeatureKey.TAMILAT -> navController.navigate(AppDestination.Tamilat.route)
                         HomeFeatureKey.IMAGES -> navController.navigate(AppDestination.Images.route)
+                        HomeFeatureKey.RECORDINGS -> navController.navigate(AppDestination.Recordings.route)
+                        HomeFeatureKey.STATUS -> navController.navigate(AppDestination.Status.route)
                         else -> Unit
                     }
                 },
@@ -118,6 +132,7 @@ fun AppNavHost(
         composable(AppDestination.Ayat.route) {
             AyatRoute(
                 contentPadding = innerPadding,
+                onBack = { navController.popBackStack() },
                 onTopicSelected = { topicId ->
                     navController.navigate(AppDestination.AyatSound.createRoute(topicId))
                 },
@@ -173,7 +188,10 @@ fun AppNavHost(
             )
         }
         composable(AppDestination.Doaa.route) {
-            DoaaRoute(contentPadding = innerPadding)
+            DoaaRoute(
+                contentPadding = innerPadding,
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(AppDestination.AzkarList.route) {
             AzkarListRoute(
@@ -322,6 +340,26 @@ fun AppNavHost(
                 onBack = { navController.popBackStack() },
             )
         }
+        composable(AppDestination.Status.route) {
+            Box(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp)) {
+                LiquidGlassCard(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.size(44.dp),
+                    cornerRadius = 22.dp,
+                    tintColor = MaterialTheme.colorScheme.onSurface,
+                    refraction = 0.25f,
+                    frost = 3f,
+                    glowAlpha = 0.2f,
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            }
+        }
         composable(AppDestination.Settings.route) {
             SettingsRoute(
                 contentPadding = innerPadding,
@@ -335,10 +373,12 @@ fun AppNavHost(
                 navArgument("surahNumber") { type = NavType.IntType; defaultValue = 0 },
             ),
         ) { backStackEntry ->
+            val pageArg = backStackEntry.arguments?.getInt("page") ?: 1
             MushafPageScreen(
                 contentPadding = innerPadding,
                 hazeState = hazeState,
                 surahNumber = backStackEntry.arguments?.getInt("surahNumber")?.takeIf { it > 0 },
+                initialPage = if (backStackEntry.arguments?.getInt("surahNumber") == 0) pageArg else 0,
                 onBack = { navController.popBackStack() },
             )
         }
@@ -352,6 +392,13 @@ fun AppNavHost(
             CardsRoute(
                 contentPadding = innerPadding,
                 onBack = { navController.popBackStack() }
+            )
+        }
+        composable(AppDestination.Recordings.route) {
+            RecordingsRoute(
+                contentPadding = innerPadding,
+                hazeState = hazeState,
+                onBack = { navController.popBackStack() },
             )
         }
     }

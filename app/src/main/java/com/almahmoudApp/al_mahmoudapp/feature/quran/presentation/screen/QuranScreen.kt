@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -30,6 +32,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.AudioFile
 import androidx.compose.material.icons.rounded.Close
@@ -78,6 +81,7 @@ import com.almahmoudApp.al_mahmoudapp.core.ui.components.EmptyView
 import com.almahmoudApp.al_mahmoudapp.feature.quran.domain.model.QuranSurah
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.state.QuranUiState
 import com.almahmoudApp.al_mahmoudapp.feature.quran.presentation.viewmodel.QuranViewModel
+import com.almahmoudApp.al_mahmoudapp.feature.quran.util.getSurahNameArabic
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -133,21 +137,31 @@ fun QuranScreen(
         FilterType.FAVORITES to "المفضلة",
     )
 
-    // RTL layout
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(top = contentPadding.calculateTopPadding()),
+                .background(MaterialTheme.colorScheme.background)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
         ) {
-            // Header
-            QuranHeader()
-
-            // Search bar
             QuranSearchBar(
                 query = state.query,
                 onQueryChange = onQueryChange,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+
+            // Continue reading / khatmah card
+            val surahName = state.lastReadSurahName
+                .ifEmpty { state.content?.surahs?.firstOrNull { it.number == state.lastReadSurah }?.nameArabic
+                    ?: getSurahNameArabic(state.lastReadSurah) }
+            QuranKhatmahCard(
+                surahName = surahName,
+                pageNumber = state.lastReadPage,
+                onClick = {
+                    onNavigateToText(0, state.lastReadPage, surahName)
+                },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
 
             // Tab row
@@ -266,46 +280,59 @@ fun QuranScreen(
 }
 
 @Composable
-private fun QuranHeader() {
+private fun QuranKhatmahCard(
+    surahName: String,
+    pageNumber: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val primaryColor = MaterialTheme.colorScheme.primary
 
-    Column(
-        modifier = Modifier
+    Row(
+        modifier = modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .clip(RoundedCornerShape(14.dp))
+            .background(primaryColor.copy(alpha = 0.08f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(CircleShape)
-                    .background(primaryColor.copy(alpha = 0.1f))
-                    .border(1.dp, primaryColor.copy(alpha = 0.2f), CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.MenuBook,
-                    contentDescription = null,
-                    tint = primaryColor,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(primaryColor.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                contentDescription = null,
+                tint = primaryColor,
+                modifier = Modifier.size(22.dp),
+            )
         }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = stringResource(R.string.quran_title),
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold,
-            ),
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = stringResource(R.string.quran_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center,
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "ختمة القرآن",
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = "$surahName • صفحة $pageNumber",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            )
+        }
+
+        Icon(
+            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+            contentDescription = null,
+            tint = primaryColor.copy(alpha = 0.5f),
+            modifier = Modifier.size(20.dp),
         )
     }
 }
@@ -317,8 +344,6 @@ private fun QuranSearchBar(
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
     val hasText = query.isNotEmpty()
 
     Row(
@@ -326,7 +351,7 @@ private fun QuranSearchBar(
             .fillMaxWidth()
             .height(44.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(surfaceVariantColor.copy(alpha = 0.5f))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -334,7 +359,7 @@ private fun QuranSearchBar(
         Icon(
             imageVector = Icons.Rounded.Search,
             contentDescription = null,
-            tint = primaryColor.copy(alpha = 0.5f),
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
             modifier = Modifier.size(20.dp),
         )
 
@@ -347,11 +372,8 @@ private fun QuranSearchBar(
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-            decorationBox = { inner ->
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
+            decorationBox = { innerTextField ->
+                Box(modifier = Modifier.weight(1f)) {
                     if (!hasText) {
                         Text(
                             text = stringResource(R.string.quran_search_surah),
@@ -359,7 +381,7 @@ private fun QuranSearchBar(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                         )
                     }
-                    inner()
+                    innerTextField()
                 }
             },
             modifier = Modifier.weight(1f),
